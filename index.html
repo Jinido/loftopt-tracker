@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LOFT OPT | Отслеживание груза</title>
+
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Base Color Palette (Dark Theme Default) */
+      --bg-color: #0f1218;
+      --card-bg: rgba(23, 28, 38, 0.88);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(30, 37, 50, 0.95);
+
+      --text-primary: #f3f6fa;
+      --text-secondary: #9aa4b2;
+      --text-muted: #626c7a;
+
+      --accent: #2563eb;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      --accent-glow: rgba(59, 130, 246, 0.25);
+      --accent-light: rgba(59, 130, 246, 0.12);
+
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --success-bg: rgba(16, 185, 129, 0.12);
+
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --danger-border: rgba(239, 68, 68, 0.3);
+
+      --input-bg: rgba(18, 22, 30, 0.95);
+      --input-border: rgba(255, 255, 255, 0.14);
+      --input-focus-border: #3b82f6;
+
+      --chip-bg: rgba(59, 130, 246, 0.1);
+      --chip-border: rgba(59, 130, 246, 0.25);
+      --chip-hover: rgba(59, 130, 246, 0.2);
+
+      --radius-xs: 6px;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* Light Mode Overrides */
+    body.light-theme {
+      --bg-color: #f4f6f9;
+      --card-bg: rgba(255, 255, 255, 0.96);
+      --card-border: rgba(0, 0, 0, 0.08);
+      --card-hover: #ffffff;
+
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+
+      --accent: #2563eb;
+      --accent-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      --accent-glow: rgba(37, 99, 235, 0.2);
+      --accent-light: rgba(37, 99, 235, 0.08);
+
+      --input-bg: #ffffff;
+      --input-border: rgba(0, 0, 0, 0.14);
+      --input-focus-border: #2563eb;
+
+      --chip-bg: rgba(37, 99, 235, 0.07);
+      --chip-border: rgba(37, 99, 235, 0.2);
+      --chip-hover: rgba(37, 99, 235, 0.14);
+
+      --danger-bg: rgba(239, 68, 68, 0.08);
+    }
+
+    /* Telegram Theme Integration */
+    body.tg-theme {
+      --bg-color: var(--tg-theme-bg-color, #0f1218);
+      --card-bg: var(--tg-theme-secondary-bg-color, rgba(23, 28, 38, 0.92));
+      --text-primary: var(--tg-theme-text-color, #f3f6fa);
+      --text-secondary: var(--tg-theme-hint-color, #9aa4b2);
+      --accent: var(--tg-theme-button-color, #2563eb);
+      --accent-gradient: linear-gradient(135deg, var(--tg-theme-button-color, #2563eb) 0%, #1d4ed8 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      overscroll-behavior: none;
+      overscroll-behavior-y: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: calc(var(--safe-top) + 12px) 16px calc(var(--safe-bottom) + 24px) 16px;
+      background-attachment: fixed;
+      background-image: 
+        radial-gradient(at 50% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 60%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header: Centered Full-Width Branding */
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 10px 4px 6px 4px;
+      width: 100%;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+    }
+
+    .brand-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 5px;
+      width: 100%;
+    }
+
+    .brand-info h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--text-primary);
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .brand-info p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      font-size: 10px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      padding: 2px 6px;
+      border-radius: var(--radius-xs);
+      background: var(--accent-light);
+      color: var(--accent);
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Search Card */
+    .search-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
+      padding: 2px 8px;
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--input-focus-border);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .input-icon {
+      width: 20px;
+      height: 20px;
+      margin-left: 6px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 46px;
+      padding: 0 8px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-primary);
+      font-family: var(--font-family);
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-muted);
+      font-weight: 400;
+      letter-spacing: normal;
+    }
+
+    .input-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .btn-paste {
+      background: var(--accent-light);
+      border: 1px solid var(--chip-border);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 9px;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-paste:hover {
+      background: var(--chip-hover);
+    }
+
+    .btn-clear {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-clear:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-search {
+      width: 100%;
+      height: 48px;
+      border: none;
+      border-radius: var(--radius-md);
+      background: var(--accent-gradient);
+      color: #ffffff;
+      font-family: var(--font-family);
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .btn-search:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .btn-search:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px var(--accent-glow);
+    }
+
+    .btn-search:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* History Chips Section */
+    .history-section {
+      display: none;
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .history-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .history-clear-all {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 2px 4px;
+      transition: color 0.15s ease;
+    }
+
+    .history-clear-all:hover {
+      color: var(--danger);
+    }
+
+    .history-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .history-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      color: var(--text-primary);
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .history-chip:hover {
+      background: var(--chip-hover);
+      border-color: var(--accent);
+    }
+
+    .chip-text {
+      max-width: 170px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chip-del {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      color: var(--text-muted);
+      transition: color 0.15s ease;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .chip-del:hover {
+      color: var(--danger);
+    }
+
+    /* Error Card */
+    .error-card {
+      display: none;
+      background: var(--danger-bg);
+      border: 1px solid var(--danger-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      gap: 14px;
+      flex-direction: column;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .error-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .error-icon {
+      color: var(--danger);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .error-content h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--danger);
+      margin-bottom: 4px;
+    }
+
+    .error-content p {
+      font-size: 13px;
+      color: var(--text-primary);
+      line-height: 1.45;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .btn-contact {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #229ed9;
+      color: #ffffff;
+      padding: 9px 14px;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity 0.15s ease;
+    }
+
+    .btn-contact:hover {
+      opacity: 0.9;
+    }
+
+    .btn-contact svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Loading State */
+    .loading-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 44px 20px;
+      gap: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+    }
+
+    .spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(59, 130, 246, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Empty State */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 48px 20px;
+      background: var(--card-bg);
+      border: 1px dashed var(--card-border);
+      border-radius: var(--radius-lg);
+      gap: 14px;
+    }
+
+    .empty-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .empty-state h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      max-width: 300px;
+      line-height: 1.45;
+    }
+
+    /* Result View */
+    .result-view {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Summary Card */
+    .summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .track-num-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .track-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .track-num-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-copy-track {
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-border);
+      border-radius: var(--radius-xs);
+      color: var(--accent);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy-track:hover {
+      background: var(--chip-hover);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid var(--success-glow);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Route visualizer */
+    .route-visual {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 14px;
+    }
+
+    .route-point {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      max-width: 42%;
+    }
+
+    .route-point.right {
+      text-align: right;
+    }
+
+    .point-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .point-main {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .route-arrow {
+      color: var(--accent);
+      opacity: 0.85;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Meta Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .meta-item {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .meta-item-full {
+      grid-column: span 2;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Subscribe Card */
+    .subscribe-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.25s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .subscribe-card.subscribed {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.06);
+    }
+
+    .sub-header-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sub-icon-badge {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .subscribe-card.subscribed .sub-icon-badge {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .sub-text-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .sub-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .sub-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .btn-sub-action {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .btn-sub-action:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    .btn-sub-action:active {
+      transform: translateY(0);
+    }
+
+    .btn-sub-action.subscribed {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      box-shadow: none;
+    }
+
+    .btn-sub-action.subscribed:hover {
+      background: rgba(239, 68, 68, 0.18);
+    }
+
+    .btn-sub-action:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Bot Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      max-width: 330px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 12px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.show .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .modal-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .btn-modal-primary {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--accent-gradient);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-modal-secondary {
+      width: 100%;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Timeline Stepper */
+    .timeline-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .timeline-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .timeline-header h3 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timeline-count {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .timeline-item {
+      display: flex;
+      position: relative;
+      padding-bottom: 22px;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline-item:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 30px;
+      bottom: 0;
+      width: 2px;
+      background: var(--card-border);
+    }
+
+    .timeline-item.latest:not(:last-child)::before {
+      background: linear-gradient(to bottom, var(--accent) 0%, var(--card-border) 100%);
+    }
+
+    .timeline-node {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--input-bg);
+      border: 2px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      z-index: 2;
+      transition: all 0.2s ease;
+    }
+
+    .timeline-item.latest .timeline-node {
+      background: var(--accent-gradient);
+      border-color: #ffffff;
+      color: #ffffff;
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    .timeline-item.initial .timeline-node {
+      border-color: var(--text-muted);
+    }
+
+    .timeline-content {
+      margin-left: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+    }
+
+    .timeline-time {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .timeline-item.latest .timeline-time {
+      color: var(--accent);
+    }
+
+    .timeline-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .timeline-desc {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 20px);
+      left: 50%;
+      transform: translateX(-50%) translateY(40px);
+      background: rgba(22, 27, 34, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+    }
+
+    body.light-theme .toast {
+      background: rgba(31, 35, 40, 0.95);
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Landscape Orientation Overlay */
+    .orientation-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999999;
+      background: rgba(15, 18, 24, 0.96);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .orientation-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 30px 24px;
+      max-width: 380px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      animation: fadeInScale 0.3s ease-out;
+    }
+
+    .orientation-icon-wrap {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: rgba(37, 99, 235, 0.12);
+      border: 1px solid rgba(37, 99, 235, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .phone-rotate-anim {
+      animation: tiltPhone 2.2s ease-in-out infinite;
+    }
+
+    .rotate-arrow-anim {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      color: var(--accent);
+      animation: spinArrow 2.2s linear infinite;
+    }
+
+    @keyframes tiltPhone {
+      0%, 100% { transform: rotate(90deg); }
+      50% { transform: rotate(0deg); }
+    }
+
+    @keyframes spinArrow {
+      0% { transform: rotate(0deg); opacity: 0.8; }
+      100% { transform: rotate(360deg); opacity: 1; }
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .orientation-card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.35;
+    }
+
+    .orientation-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    @media screen and (orientation: landscape) and (max-height: 540px) {
+      .orientation-overlay {
+        display: flex !important;
+      }
+      .container {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Landscape Orientation Warning Overlay -->
+  <div id="orientationOverlay" class="orientation-overlay" aria-hidden="true">
+    <div class="orientation-card">
+      <div class="orientation-icon-wrap">
+        <svg class="phone-rotate-anim" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="3"></rect>
+          <line x1="10" y1="18" x2="14" y2="18"></line>
+        </svg>
+        <svg class="rotate-arrow-anim" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+      </div>
+      <h2>Упс, кажется вы перевернули телефон</h2>
+      <p>Верните в вертикальное положение для корректной работы сервиса</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Header: Clean Text Branding -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-info">
+          <h1>LOFT OPT</h1>
+          <p>Отслеживание статуса доставки</p>
+        </div>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <div class="search-card">
+      <div class="input-wrapper">
+        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input 
+          type="text" 
+          id="trackInput" 
+          class="search-input" 
+          placeholder="Введите код вашего груза" 
+          autocomplete="off"
+          autocapitalize="characters"
+          spellcheck="false"
+        >
+        <div class="input-actions">
+          <button type="button" id="pasteBtn" class="btn-paste">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            Вставить
+          </button>
+          <button type="button" id="clearInputBtn" class="btn-clear">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <button type="button" id="searchBtn" class="btn-search">
+        <span>Отследить груз</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+
+      <!-- History Chips Section -->
+      <div id="historySection" class="history-section">
+        <div class="history-header">
+          <span class="history-title">История поиска</span>
+        </div>
+        <div id="historyChips" class="history-chips">
+          <!-- Dynamically inserted chips -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Card -->
+    <div id="errorCard" class="error-card">
+      <div class="error-top">
+        <div class="error-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="error-content">
+          <h4 id="errorTitle">Груз не найден</h4>
+          <p id="errorMessage">Проверьте правильность введённого трек-номера или уточните актуальный номер у вашего менеджера LOFT OPT.</p>
+        </div>
+      </div>
+      <div class="error-actions">
+        <button type="button" id="contactManagerBtn" class="btn-contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+          Написать менеджеру (@loftopt_zakaz)
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+      <div class="spinner"></div>
+      <div class="loading-text">Запрашиваем статус в системе доставки...</div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>
+      <h3>Где ваш груз?</h3>
+      <p>Введите код вашего груза выше или вставьте его из буфера, чтобы узнать статус и маршрут перемещения.</p>
+    </div>
+
+    <!-- Result View -->
+    <div id="resultView" class="result-view">
+      <!-- Summary Card -->
+      <section class="summary-card">
+        <div class="summary-header">
+          <div class="track-num-group">
+            <span class="track-label">Накладная</span>
+            <div class="track-num-val">
+              <span id="resOrderNumber">—</span>
+            </div>
+          </div>
+          <div class="status-badge">
+            <span class="status-dot"></span>
+            <span id="resStatusText">В пути</span>
+          </div>
+        </div>
+
+        <!-- Route Visual -->
+        <div class="route-visual">
+          <div class="route-point">
+            <span class="point-sub">Отправление</span>
+            <span id="resOrigin" class="point-main">—</span>
+          </div>
+          <div class="route-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </div>
+          <div class="route-point right">
+            <span class="point-sub">Назначение</span>
+            <span id="resDestination" class="point-main">—</span>
+          </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="meta-grid">
+          <div class="meta-item meta-item-full">
+            <div class="meta-label">Ожидаемая дата прибытия</div>
+            <div id="resExpectArriveTime" class="meta-value">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Subscription Action Banner -->
+      <section class="subscribe-card" id="subscribeCard">
+        <div class="sub-header-row">
+          <div class="sub-icon-badge" id="subIconBadge">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </div>
+          <div class="sub-text-col">
+            <div class="sub-title" id="subTitle">Уведомления в Telegram</div>
+            <div class="sub-desc" id="subDesc">Получайте статус груза прямо в бот при каждом изменении</div>
+          </div>
+        </div>
+        <button type="button" id="subscribeBtn" class="btn-sub-action">
+          <span id="subscribeBtnText">🔔 Получать обновления в бот</span>
+        </button>
+      </section>
+
+      <!-- Vertical Timeline Card -->
+      <section class="timeline-card">
+        <div class="timeline-header">
+          <h3>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            История перемещений
+          </h3>
+          <span id="resTimelineCount" class="timeline-count">0 этапов</span>
+        </div>
+
+        <div id="timelineList" class="timeline-list">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Bot Activation Modal -->
+  <div id="botModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+      </div>
+      <h3 id="modalTitle">Получать обновления в бот</h3>
+      <p id="modalDesc">Чтобы Telegram мог присылать вам оповещения о смене статуса, откройте нашего бота и нажмите <b>Start</b>.</p>
+      <div class="modal-actions">
+        <button type="button" id="openBotBtn" class="btn-modal-primary">Перейти в бота (@loftopt_bot)</button>
+        <button type="button" id="closeModalBtn" class="btn-modal-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+    <span id="toastMsg">Успешно</span>
+  </div>
+
+  <script>
+    /**
+     * LOFT OPT Cargo Tracker Mini App
+     * Direct integration with Baikal Logistics tracking gateway.
+     */
+
+    const CONFIG = {
+      API_URL: 'https://gateway-saas.baikalasia.com/bison-oms/oms/platform/searchTrack',
+      MANAGER_USERNAME: 'loftopt_zakaz',
+      BOT_USERNAME: 'loftopt_bot',
+      HISTORY_KEY: 'loft_opt_track_history',
+      MAX_HISTORY: 8
+    };
+
+    // 1. Telegram WebApp Integration & Theme Handling
+    const tg = window.Telegram?.WebApp;
+
+    function initTelegramTheme() {
+      if (tg) {
+        try {
+          tg.ready();
+          tg.expand();
+
+          // Disable vertical swipe gestures (prevent pull down close)
+          if (typeof tg.disableVerticalSwipes === 'function') {
+            tg.disableVerticalSwipes();
+          }
+
+          // Request Fullscreen (Telegram WebApp 8.0+)
+          if (typeof tg.requestFullscreen === 'function') {
+            try {
+              tg.requestFullscreen();
+            } catch (e) {}
+          }
+
+          // Seamless header & background (no contrasting black bar)
+          if (typeof tg.setHeaderColor === 'function') {
+            try {
+              tg.setHeaderColor('bg_color');
+            } catch (e) {}
+          }
+          if (typeof tg.setBackgroundColor === 'function') {
+            try {
+              tg.setBackgroundColor('bg_color');
+            } catch (e) {}
+          }
+
+          if (tg.themeParams && tg.themeParams.bg_color) {
+            document.body.classList.add('tg-theme');
+          }
+
+          if (tg.colorScheme === 'light') {
+            document.body.classList.add('light-theme');
+          } else {
+            document.body.classList.remove('light-theme');
+          }
+
+          tg.onEvent('themeChanged', () => {
+            if (tg.colorScheme === 'light') {
+              document.body.classList.add('light-theme');
+            } else {
+              document.body.classList.remove('light-theme');
+            }
+          });
+        } catch (e) {
+          console.warn('Telegram WebApp init warning:', e);
+        }
+      } else {
+        // Fallback to browser color scheme preference
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          document.body.classList.add('light-theme');
+        }
+      }
+    }
+
+    initTelegramTheme();
+
+    function triggerHaptic(type = 'light') {
+      try {
+        if (tg?.HapticFeedback) {
+          if (type === 'success' || type === 'error' || type === 'warning') {
+            tg.HapticFeedback.notificationOccurred(type);
+          } else {
+            tg.HapticFeedback.impactOccurred(type);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // 2. History Storage (localStorage + Telegram CloudStorage sync)
+    function getLocalHistory() {
+      try {
+        const stored = localStorage.getItem(CONFIG.HISTORY_KEY);
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveLocalHistory(list) {
+      try {
+        localStorage.setItem(CONFIG.HISTORY_KEY, JSON.stringify(list));
+      } catch (e) {}
+      
+      // Sync to Telegram CloudStorage if available
+      try {
+        if (tg?.CloudStorage?.setItem) {
+          tg.CloudStorage.setItem(CONFIG.HISTORY_KEY, JSON.stringify(list), (err, success) => {
+            if (err) console.warn('CloudStorage save warning:', err);
+          });
+        }
+      } catch (e) {}
+    }
+
+    function initCloudHistory() {
+      try {
+        if (tg?.CloudStorage?.getItem) {
+          tg.CloudStorage.getItem(CONFIG.HISTORY_KEY, (err, value) => {
+            if (!err && value) {
+              try {
+                const cloudList = JSON.parse(value);
+                if (Array.isArray(cloudList) && cloudList.length > 0) {
+                  const localList = getLocalHistory();
+                  // Merge unique values
+                  const merged = Array.from(new Set([...cloudList, ...localList])).slice(0, CONFIG.MAX_HISTORY);
+                  saveLocalHistory(merged);
+                  renderHistory();
+                }
+              } catch (e) {}
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    function addToHistory(code) {
+      if (!code) return;
+      const clean = code.trim().toUpperCase();
+      let list = getLocalHistory().filter(item => item !== clean);
+      list.unshift(clean);
+      if (list.length > CONFIG.MAX_HISTORY) {
+        list = list.slice(0, CONFIG.MAX_HISTORY);
+      }
+      saveLocalHistory(list);
+      renderHistory();
+    }
+
+    function removeFromHistory(code) {
+      let list = getLocalHistory().filter(item => item !== code);
+      saveLocalHistory(list);
+      renderHistory();
+      triggerHaptic('light');
+    }
+
+    function clearAllHistory() {
+      saveLocalHistory([]);
+      renderHistory();
+      triggerHaptic('medium');
+      showToast('История поиска очищена');
+    }
+
+    // 3. API Tracking Service
+    const TrackingService = {
+      async search(orderNumber) {
+        const cleanNumber = String(orderNumber).trim();
+        if (!cleanNumber) {
+          throw new Error('Укажите номер накладной');
+        }
+
+        // Try local server proxy first
+        try {
+          const localRes = await fetch('/api/track', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({ orderNumber: cleanNumber })
+          });
+          if (localRes.ok) {
+            const data = await localRes.json();
+            return { result: [data] };
+          }
+        } catch (e) {
+          // Fall back to direct gateway if server not reachable
+        }
+
+        const response = await fetch(CONFIG.API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            orderNumbers: [cleanNumber],
+            lang: 'ru_RU'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Ошибка сети (${response.status})`);
+        }
+
+        const data = await response.json();
+        return data;
+      }
+    };
+
+    // 4. UI Elements
+    const trackInput = document.getElementById('trackInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const pasteBtn = document.getElementById('pasteBtn');
+    const clearInputBtn = document.getElementById('clearInputBtn');
+    const historySection = document.getElementById('historySection');
+    const historyChips = document.getElementById('historyChips');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+
+    const emptyState = document.getElementById('emptyState');
+    const loadingState = document.getElementById('loadingState');
+    const errorCard = document.getElementById('errorCard');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessage = document.getElementById('errorMessage');
+    const contactManagerBtn = document.getElementById('contactManagerBtn');
+
+    const resultView = document.getElementById('resultView');
+    const resOrderNumber = document.getElementById('resOrderNumber');
+    const copyTrackBtn = document.getElementById('copyTrackBtn');
+    const resStatusText = document.getElementById('resStatusText');
+    const resOrigin = document.getElementById('resOrigin');
+    const resDestination = document.getElementById('resDestination');
+    const resCarBoxNo = document.getElementById('resCarBoxNo');
+    const resExpectArriveTime = document.getElementById('resExpectArriveTime');
+    const resCustomerNo = document.getElementById('resCustomerNo');
+    const resTimelineCount = document.getElementById('resTimelineCount');
+    const timelineList = document.getElementById('timelineList');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+
+    // Subscription & Modal elements
+    const subscribeCard = document.getElementById('subscribeCard');
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    const subscribeBtnText = document.getElementById('subscribeBtnText');
+    const subTitle = document.getElementById('subTitle');
+    const subDesc = document.getElementById('subDesc');
+    const botModal = document.getElementById('botModal');
+    const openBotBtn = document.getElementById('openBotBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // 5. Helpers & UI Handlers
+    function showToast(msg) {
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2200);
+    }
+
+    function updateInputControls() {
+      const hasValue = trackInput.value.trim().length > 0;
+      clearInputBtn.style.display = hasValue ? 'inline-flex' : 'none';
+      pasteBtn.style.display = hasValue ? 'none' : 'inline-flex';
+    }
+
+    function setViewState(state) {
+      // states: 'empty', 'loading', 'error', 'result'
+      emptyState.style.display = state === 'empty' ? 'flex' : 'none';
+      loadingState.style.display = state === 'loading' ? 'flex' : 'none';
+      errorCard.style.display = state === 'error' ? 'flex' : 'none';
+      resultView.style.display = state === 'result' ? 'flex' : 'none';
+
+      searchBtn.disabled = (state === 'loading');
+    }
+
+    function showError(title, msg) {
+      errorTitle.textContent = title || 'Груз не найден';
+      errorMessage.textContent = msg || 'Проверьте правильность введённого трек-номера или уточните актуальный номер у вашего менеджера LOFT OPT.';
+      setViewState('error');
+      triggerHaptic('error');
+    }
+
+    function renderHistory() {
+      const history = getLocalHistory();
+      if (!history || history.length === 0) {
+        historySection.style.display = 'none';
+        return;
+      }
+
+      historySection.style.display = 'block';
+      historyChips.innerHTML = '';
+
+      history.forEach(code => {
+        const chip = document.createElement('div');
+        chip.className = 'history-chip';
+        
+        const textSpan = document.createElement('span');
+        textSpan.className = 'chip-text';
+        textSpan.textContent = code;
+
+        const delBtn = document.createElement('span');
+        delBtn.className = 'chip-del';
+        delBtn.innerHTML = '&times;';
+        delBtn.title = 'Удалить из истории';
+
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeFromHistory(code);
+        });
+
+        chip.addEventListener('click', () => {
+          trackInput.value = code;
+          updateInputControls();
+          triggerHaptic('light');
+          performSearch(code);
+        });
+
+        chip.appendChild(textSpan);
+        chip.appendChild(delBtn);
+        historyChips.appendChild(chip);
+      });
+    }
+
+    function getNoun(number, one, two, five) {
+      let n = Math.abs(number);
+      n %= 100;
+      if (n >= 5 && n <= 20) return five;
+      n %= 10;
+      if (n === 1) return one;
+      if (n >= 2 && n <= 4) return two;
+      return five;
+    }
+
+    function formatDestination(dest) {
+      if (!dest) return 'Пункт назначения';
+      const s = String(dest).trim();
+      if (/^рябинск$/i.test(s)) return 'Москва (Рябинск)';
+      if (/^рябиновая$/i.test(s)) return 'Москва (Рябиновая)';
+      if (/^(южные ворота|тяк|люблино|садовод|северные ворота)$/i.test(s)) return `Москва (${s})`;
+      return s;
+    }
+
+    function displayTrackingData(item) {
+      resOrderNumber.textContent = item.orderNumber || item.orderNo || '—';
+      resStatusText.textContent = item.trackStatus || item.status || 'В обработке';
+      
+      resOrigin.textContent = item.getGoodsAddr || 'Склад отправления';
+      resDestination.textContent = formatDestination(item.targetMarket || item.arriveCity || 'Пункт назначения');
+      
+      if (resCarBoxNo) resCarBoxNo.textContent = item.carBoxNo || '—';
+      if (resCustomerNo) resCustomerNo.textContent = item.customerNo || '—';
+
+      if (item.expectArriveTime) {
+        resExpectArriveTime.textContent = item.expectArriveTime.split(' ')[0];
+      } else {
+        resExpectArriveTime.textContent = 'Уточняется';
+      }
+
+      const details = Array.isArray(item.details) ? item.details : [];
+      resTimelineCount.textContent = `${details.length} ${getNoun(details.length, 'этап', 'этапа', 'этапов')}`;
+
+      timelineList.innerHTML = '';
+
+      if (details.length === 0) {
+        timelineList.innerHTML = `
+          <div style="padding: 16px; text-align: center; color: var(--text-secondary);">
+            Детальная информация о маршруте формируется
+          </div>
+        `;
+      } else {
+        details.forEach((step, index) => {
+          const isLatest = index === 0;
+          const isInitial = index === details.length - 1;
+
+          const itemEl = document.createElement('div');
+          itemEl.className = `timeline-item ${isLatest ? 'latest' : ''} ${isInitial ? 'initial' : ''}`;
+
+          let iconHtml = '';
+          if (isLatest) {
+            iconHtml = `
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            `;
+          } else if (isInitial) {
+            iconHtml = `
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            `;
+          } else {
+            iconHtml = `
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+            `;
+          }
+
+          itemEl.innerHTML = `
+            <div class="timeline-node">
+              ${iconHtml}
+            </div>
+            <div class="timeline-content">
+              <span class="timeline-time">${step.trackTime || 'Время фиксируется'}</span>
+              <span class="timeline-title">${step.trackStatus || 'Статус обновлен'}</span>
+              <p class="timeline-desc">${step.context || 'Операция в распределительном пункте'}</p>
+            </div>
+          `;
+
+          timelineList.appendChild(itemEl);
+        });
+      }
+
+      currentTrackingOrder = item;
+      checkSubscriptionState(item);
+
+      setViewState('result');
+      triggerHaptic('success');
+    }
+
+    async function performSearch(rawCode) {
+      const query = (rawCode || trackInput.value || '').trim();
+      if (!query) {
+        trackInput.focus();
+        showToast('Пожалуйста, введите код вашего груза');
+        triggerHaptic('warning');
+        return;
+      }
+
+      setViewState('loading');
+      triggerHaptic('light');
+
+      try {
+        const response = await TrackingService.search(query);
+
+        // API Response handling
+        if (response && response.result && Array.isArray(response.result) && response.result.length > 0) {
+          const firstItem = response.result[0];
+
+          // Check for code 400 or failure inside the result item
+          if (firstItem.code === '400' || firstItem.failMessage) {
+            addToHistory(query);
+            showError(
+              'Накладная не найдена',
+              firstItem.failMessage || 'Груз с таким номером пока не зарегистрирован в базе данных или номер введен с ошибкой.'
+            );
+            return;
+          }
+
+          addToHistory(query);
+          displayTrackingData(firstItem);
+        } else if (response && response.code === '400') {
+          showError('Номер не найден', response.message || 'Проверьте трек-номер накладной');
+        } else {
+          showError('Информация отсутствует', 'Данные по указанной накладной не найдены в системе.');
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+        showError('Ошибка соединения', 'Не удалось связаться с сервером отслеживания. Проверьте интернет-соединение.');
+      }
+    }
+
+    // 6. Event Listeners
+    searchBtn.addEventListener('click', () => performSearch());
+
+    trackInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        performSearch();
+      }
+    });
+
+    trackInput.addEventListener('input', () => {
+      updateInputControls();
+    });
+
+    clearInputBtn.addEventListener('click', () => {
+      trackInput.value = '';
+      updateInputControls();
+      trackInput.focus();
+      triggerHaptic('light');
+    });
+
+    // Paste button from clipboard
+    pasteBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      triggerHaptic('light');
+
+      let pasted = false;
+
+      // 1. Try modern navigator.clipboard first
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (text && text.trim()) {
+            trackInput.value = text.trim();
+            updateInputControls();
+            showToast('Код вставлен');
+            performSearch(text.trim());
+            pasted = true;
+            return;
+          } else if (text === '') {
+            showToast('Буфер обмена пуст');
+            pasted = true;
+            return;
+          }
+        } catch (err) {
+          console.warn('navigator.clipboard.readText err:', err);
+        }
+      }
+
+      // 2. Telegram WebApp native clipboard method
+      if (!pasted && tg && typeof tg.readTextFromClipboard === 'function') {
+        try {
+          tg.readTextFromClipboard((clipText) => {
+            if (clipText && clipText.trim()) {
+              trackInput.value = clipText.trim();
+              updateInputControls();
+              showToast('Код вставлен');
+              performSearch(clipText.trim());
+              pasted = true;
+            }
+          });
+        } catch (err) {
+          console.warn('tg.readTextFromClipboard err:', err);
+        }
+      }
+    });
+
+    if (clearHistoryBtn) {
+      clearHistoryBtn.addEventListener('click', () => {
+        clearAllHistory();
+      });
+    }
+
+    // Contact manager button
+    contactManagerBtn.addEventListener('click', () => {
+      const url = `https://t.me/${CONFIG.MANAGER_USERNAME}`;
+      triggerHaptic('medium');
+      if (tg?.openTelegramLink) {
+        tg.openTelegramLink(url);
+      } else {
+        window.open(url, '_blank');
+      }
+    });
+
+    // Copy tracking number button (if present)
+    if (copyTrackBtn) {
+      copyTrackBtn.addEventListener('click', async () => {
+        const track = resOrderNumber.textContent;
+        if (!track || track === '—') return;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(track);
+          } else {
+            const temp = document.createElement('input');
+            temp.value = track;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+          }
+          triggerHaptic('light');
+          showToast('Номер накладной скопирован');
+        } catch (e) {
+          showToast('Не удалось скопировать');
+        }
+      });
+    }
+
+    // 7. Subscription Logic & Telegram Bot Linking
+    let currentTrackingOrder = null;
+    let currentSubscriptionState = false;
+
+    async function checkSubscriptionState(item) {
+      const orderNumber = (item.orderNumber || item.orderNo || '').trim().toUpperCase();
+      if (!orderNumber) return;
+
+      const userId = tg?.initDataUnsafe?.user?.id;
+      if (!userId) {
+        setSubscribeButtonUI(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/subscription-status?telegramId=${userId}&orderNumber=${encodeURIComponent(orderNumber)}`);
+        if (res.ok) {
+          const data = await res.json();
+          currentSubscriptionState = !!data.isSubscribed;
+          setSubscribeButtonUI(currentSubscriptionState);
+        }
+      } catch (e) {
+        console.warn('Subscription status check warning:', e);
+      }
+    }
+
+    function setSubscribeButtonUI(isSubscribed) {
+      currentSubscriptionState = isSubscribed;
+      if (isSubscribed) {
+        subscribeCard.classList.add('subscribed');
+        subscribeBtn.classList.add('subscribed');
+        subscribeBtnText.textContent = '🔕 Отслеживается (Отменить)';
+        subTitle.textContent = 'Отслеживание активно';
+        subDesc.textContent = 'Бот пришлет новый статус в Telegram при перемещении груза';
+      } else {
+        subscribeCard.classList.remove('subscribed');
+        subscribeBtn.classList.remove('subscribed');
+        subscribeBtnText.textContent = '🔔 Получать обновления в бот';
+        subTitle.textContent = 'Уведомления в Telegram';
+        subDesc.textContent = 'Получайте статус груза прямо в бот при каждом изменении';
+      }
+    }
+
+    async function toggleSubscription() {
+      if (!currentTrackingOrder) return;
+      const orderNumber = (currentTrackingOrder.orderNumber || currentTrackingOrder.orderNo || '').trim().toUpperCase();
+      const userId = tg?.initDataUnsafe?.user?.id;
+
+      if (!userId) {
+        openBotModal(orderNumber);
+        return;
+      }
+
+      subscribeBtn.disabled = true;
+      triggerHaptic('light');
+
+      try {
+        if (currentSubscriptionState) {
+          const res = await fetch('/api/unsubscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ telegramId: userId, orderNumber })
+          });
+          if (res.ok) {
+            setSubscribeButtonUI(false);
+            showToast('Отслеживание отменено');
+            triggerHaptic('medium');
+          } else {
+            showToast('Не удалось отменить отслеживание');
+          }
+        } else {
+          const details = Array.isArray(currentTrackingOrder.details) ? currentTrackingOrder.details : [];
+          const latestStep = details.length > 0 ? details[0] : null;
+          const currentStatus = latestStep?.trackStatus || currentTrackingOrder.trackStatus || '';
+          const currentContext = latestStep?.context || '';
+          const currentTime = latestStep?.trackTime || '';
+
+          const res = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              telegramId: userId,
+              orderNumber,
+              currentStatus,
+              currentContext,
+              currentTime
+            })
+          });
+
+          if (res.ok) {
+            setSubscribeButtonUI(true);
+            showToast('Вы подписались на обновления в боте');
+            triggerHaptic('success');
+          } else {
+            showToast('Ошибка оформления подписки');
+          }
+        }
+      } catch (err) {
+        console.error('Subscription error:', err);
+        showToast('Ошибка связи с сервером');
+      } finally {
+        subscribeBtn.disabled = false;
+      }
+    }
+
+    function openBotModal(orderNumber) {
+      botModal.classList.add('show');
+      openBotBtn.onclick = () => {
+        const url = `https://t.me/${CONFIG.BOT_USERNAME}?start=track_${encodeURIComponent(orderNumber || '')}`;
+        triggerHaptic('medium');
+        if (tg?.openTelegramLink) {
+          tg.openTelegramLink(url);
+        } else {
+          window.open(url, '_blank');
+        }
+        botModal.classList.remove('show');
+      };
+    }
+
+    closeModalBtn.addEventListener('click', () => {
+      botModal.classList.remove('show');
+    });
+
+    botModal.addEventListener('click', (e) => {
+      if (e.target === botModal) {
+        botModal.classList.remove('show');
+      }
+    });
+
+    subscribeBtn.addEventListener('click', () => {
+      toggleSubscription();
+    });
+
+    // 8. Auto-search on Deep Link
+    function checkDeepLink() {
+      const urlParams = new URLSearchParams(window.location.search);
+      let trackParam = urlParams.get('track');
+
+      if (!trackParam && tg?.initDataUnsafe?.start_param) {
+        const sp = tg.initDataUnsafe.start_param;
+        trackParam = sp.startsWith('track_') ? sp.replace('track_', '') : sp;
+      }
+
+      if (trackParam && trackParam.trim()) {
+        const clean = trackParam.trim().toUpperCase();
+        trackInput.value = clean;
+        updateInputControls();
+        performSearch(clean);
+      }
+    }
+
+    // Orientation overlay responsive check
+    function checkOrientation() {
+      const overlay = document.getElementById('orientationOverlay');
+      if (!overlay) return;
+      const isLandscape = window.innerWidth > window.innerHeight;
+      const isMobileHeight = window.innerHeight <= 540;
+      if (isLandscape && isMobileHeight) {
+        overlay.style.display = 'flex';
+      } else {
+        overlay.style.display = '';
+      }
+    }
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+    checkOrientation();
+
+    // Initial render
+    updateInputControls();
+    renderHistory();
+    initCloudHistory();
+    checkDeepLink();
+  </script>
+</body>
+</html>
