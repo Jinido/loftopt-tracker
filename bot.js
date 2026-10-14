@@ -10,7 +10,11 @@ if (!token) {
 const bot = new Bot(token);
 
 function getWebAppUrl(track = '') {
-  let base = process.env.WEBAPP_URL || 'http://localhost:8085';
+  let base = process.env.WEBAPP_URL || 'https://track.loftopt.com';
+  // If base is empty, points to onrender.com or localhost, enforce custom domain track.loftopt.com
+  if (!base || base.includes('onrender.com') || base.includes('localhost') || !base.startsWith('http')) {
+    base = 'https://track.loftopt.com';
+  }
   base = base.replace(/\/+$/, '');
   if (track) {
     return `${base}/?track=${encodeURIComponent(track)}`;
