@@ -2410,7 +2410,7 @@
       triggerHaptic('success');
     }
 
-    async function performSearch(rawCode) {
+    async function performSearch(rawCode, options = {}) {
       const query = (rawCode || trackInput.value || '').trim();
       if (!query) {
         trackInput.focus();
@@ -2441,6 +2441,12 @@
 
           addToHistory(query);
           displayTrackingData(firstItem);
+
+          if (options && options.openMap) {
+            setTimeout(() => {
+              openMapModal();
+            }, 120);
+          }
         } else if (response && response.code === '400') {
           showError('Номер не найден', response.message || 'Проверьте трек-номер накладной');
         } else {
@@ -2922,17 +2928,21 @@
     function checkDeepLink() {
       const urlParams = new URLSearchParams(window.location.search);
       let trackParam = urlParams.get('track');
+      let shouldOpenMap = urlParams.get('openMap') === '1' || urlParams.get('view') === 'map';
 
       if (!trackParam && tg?.initDataUnsafe?.start_param) {
         const sp = tg.initDataUnsafe.start_param;
-        trackParam = sp.startsWith('track_') ? sp.replace('track_', '') : sp;
+        if (sp.includes('_map')) {
+          shouldOpenMap = true;
+        }
+        trackParam = sp.replace(/^track_/, '').replace(/_map$/, '');
       }
 
       if (trackParam && trackParam.trim()) {
         const clean = trackParam.trim().toUpperCase();
         trackInput.value = clean;
         updateInputControls();
-        performSearch(clean);
+        performSearch(clean, { openMap: shouldOpenMap });
       }
     }
 

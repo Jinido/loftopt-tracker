@@ -9,17 +9,22 @@ if (!token) {
 
 const bot = new Bot(token);
 
-function getWebAppUrl(track = '') {
+function getWebAppUrl(track = '', options = {}) {
   let base = process.env.WEBAPP_URL || 'https://track.loftopt.com';
   // If base is empty, points to onrender.com or localhost, enforce custom domain track.loftopt.com
   if (!base || base.includes('onrender.com') || base.includes('localhost') || !base.startsWith('http')) {
     base = 'https://track.loftopt.com';
   }
   base = base.replace(/\/+$/, '');
+  const params = new URLSearchParams();
   if (track) {
-    return `${base}/?track=${encodeURIComponent(track)}`;
+    params.set('track', track);
   }
-  return base;
+  if (options && options.openMap) {
+    params.set('openMap', '1');
+  }
+  const qs = params.toString();
+  return qs ? `${base}/?${qs}` : base;
 }
 
 // 1. /start command: Minimalist with ONLY the Mini App button
@@ -44,8 +49,24 @@ bot.command('start', async (ctx) => {
     console.warn('Could not set chat menu button:', err.message);
   }
 
-  const keyboard = new InlineKeyboard()
-    .webApp('📦 Открыть трекер LOFT OPT', appUrl);
+  const keyboard = targetTrack
+    ? {
+        inline_keyboard: [
+          [
+            {
+              text: 'Открыть',
+              web_app: { url: getWebAppUrl(targetTrack) },
+              style: 'primary'
+            },
+            {
+              text: 'Карта',
+              web_app: { url: getWebAppUrl(targetTrack, { openMap: true }) },
+              style: 'success'
+            }
+          ]
+        ]
+      }
+    : new InlineKeyboard().webApp('📦 Открыть трекер LOFT OPT', appUrl);
 
   const welcomeText = targetTrack 
     ? `Здравствуйте, ${ctx.from.first_name || 'клиент'}!\n\nНажмите кнопку ниже, чтобы открыть карточку накладной <b>${targetTrack}</b> в приложении LOFT OPT.`
@@ -104,6 +125,11 @@ bot.callbackQuery(/^unsub:(.+)$/, async (ctx) => {
         {
           text: 'Открыть',
           web_app: { url: getWebAppUrl(orderNumber) },
+          style: 'primary'
+        },
+        {
+          text: 'Карта',
+          web_app: { url: getWebAppUrl(orderNumber, { openMap: true }) },
           style: 'success'
         }
       ]
@@ -142,13 +168,18 @@ async function sendStatusNotification(telegramId, orderItem, latestStep) {
   message += `🛣 Маршрут: ${route}\n`;
   message += `📅 Ожидаемое прибытие: ${expectDate}`;
 
-  // Single green button: "Открыть" (opens Mini App)
+  // Notification buttons: "Открыть" (primary blue) and "Карта" (success green)
   const reply_markup = {
     inline_keyboard: [
       [
         {
           text: 'Открыть',
           web_app: { url: getWebAppUrl(orderNumber) },
+          style: 'primary'
+        },
+        {
+          text: 'Карта',
+          web_app: { url: getWebAppUrl(orderNumber, { openMap: true }) },
           style: 'success'
         }
       ]
