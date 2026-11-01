@@ -743,108 +743,99 @@
       text-overflow: ellipsis;
     }
 
-    /* Subscribe Card */
-    .subscribe-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      transition: all 0.25s ease;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    /* Compact Action Buttons inside Summary Card */
+    .card-actions-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 6px;
+      width: 100%;
     }
 
-    .subscribe-card.subscribed {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: rgba(16, 185, 129, 0.06);
-    }
-
-    .sub-header-row {
+    .btn-card-action {
       display: flex;
       align-items: center;
-      gap: 12px;
+      justify-content: center;
+      gap: 7px;
+      padding: 9px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      user-select: none;
+      box-sizing: border-box;
+      min-height: 38px;
+      text-decoration: none;
     }
 
-    .sub-icon-badge {
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius-md);
-      background: var(--accent-light);
-      color: var(--accent);
-      display: flex;
+    .btn-card-action:active {
+      transform: scale(0.97);
+    }
+
+    .btn-action-icon {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: all 0.2s ease;
     }
 
-    .subscribe-card.subscribed .sub-icon-badge {
-      background: var(--success-bg);
-      color: var(--success);
+    /* Map Button: Clean blue accent style */
+    .btn-map-action {
+      background: var(--accent-light);
+      border: 1px solid var(--chip-border);
+      color: #60a5fa;
     }
 
-    .sub-text-col {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    body.light-theme .btn-map-action {
+      background: rgba(37, 99, 235, 0.08);
+      border-color: rgba(37, 99, 235, 0.2);
+      color: #2563eb;
     }
 
-    .sub-title {
-      font-size: 14px;
-      font-weight: 700;
+    .btn-map-action:hover {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    /* Subscribe Notification Button: Clean glass style */
+    .btn-sub-action {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--text-primary);
     }
 
-    .sub-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      line-height: 1.35;
-    }
-
-    .btn-sub-action {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: none;
-      background: var(--accent-gradient);
-      color: #ffffff;
-      box-shadow: 0 4px 14px var(--accent-glow);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    body.light-theme .btn-sub-action {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.08);
+      color: var(--text-primary);
     }
 
     .btn-sub-action:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
     }
 
-    .btn-sub-action:active {
-      transform: translateY(0);
-    }
-
+    /* Subscribed state: elegant emerald badge style */
     .btn-sub-action.subscribed {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
       box-shadow: none;
     }
 
     .btn-sub-action.subscribed:hover {
-      background: rgba(239, 68, 68, 0.18);
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
     }
 
     .btn-sub-action:disabled {
-      opacity: 0.6;
+      opacity: 0.55;
       cursor: not-allowed;
       transform: none;
     }
@@ -1834,37 +1825,27 @@
             <span>Прибытие: <b id="resExpectArriveTime">—</b></span>
           </div>
 
-          <button type="button" id="openMapBtn" class="btn-open-map-compact">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-              <line x1="8" y1="2" x2="8" y2="18"></line>
-              <line x1="16" y1="6" x2="16" y2="22"></line>
-            </svg>
-            <span>Посмотреть маршрут на карте</span>
-            <svg class="arrow-right-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </button>
-        </div>
-      </section>
-
-      <!-- Subscription Action Banner -->
-      <section class="subscribe-card" id="subscribeCard">
-        <div class="sub-header-row">
-          <div class="sub-icon-badge" id="subIconBadge">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </div>
-          <div class="sub-text-col">
-            <div class="sub-title" id="subTitle">Уведомления в Telegram</div>
-            <div class="sub-desc" id="subDesc">Получайте статус груза прямо в бот при каждом изменении</div>
+          <!-- Compact Action Buttons: Map & Notifications -->
+          <div class="card-actions-grid">
+            <button type="button" id="openMapBtn" class="btn-card-action btn-map-action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                <line x1="8" y1="2" x2="8" y2="18"></line>
+                <line x1="16" y1="6" x2="16" y2="22"></line>
+              </svg>
+              <span>Карта маршрута</span>
+            </button>
+            <button type="button" id="subscribeBtn" class="btn-card-action btn-sub-action">
+              <span id="subscribeBtnIcon" class="btn-action-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </span>
+              <span id="subscribeBtnText">Уведомления</span>
+            </button>
           </div>
         </div>
-        <button type="button" id="subscribeBtn" class="btn-sub-action">
-          <span id="subscribeBtnText">🔔 Получать обновления в бот</span>
-        </button>
       </section>
 
       <!-- Vertical Timeline Card -->
@@ -2594,18 +2575,26 @@
 
     function setSubscribeButtonUI(isSubscribed) {
       currentSubscriptionState = isSubscribed;
+      if (!subscribeBtn) return;
+      const iconContainer = document.getElementById('subscribeBtnIcon');
       if (isSubscribed) {
-        subscribeCard.classList.add('subscribed');
+        if (subscribeCard) subscribeCard.classList.add('subscribed');
         subscribeBtn.classList.add('subscribed');
-        subscribeBtnText.textContent = '🔕 Отслеживается (Отменить)';
-        subTitle.textContent = 'Отслеживание активно';
-        subDesc.textContent = 'Бот пришлет новый статус в Telegram при перемещении груза';
+        if (subscribeBtnText) subscribeBtnText.textContent = 'Отслеживается';
+        if (iconContainer) {
+          iconContainer.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        }
+        if (subTitle) subTitle.textContent = 'Отслеживание активно';
+        if (subDesc) subDesc.textContent = 'Бот пришлет новый статус в Telegram при перемещении груза';
       } else {
-        subscribeCard.classList.remove('subscribed');
+        if (subscribeCard) subscribeCard.classList.remove('subscribed');
         subscribeBtn.classList.remove('subscribed');
-        subscribeBtnText.textContent = '🔔 Получать обновления в бот';
-        subTitle.textContent = 'Уведомления в Telegram';
-        subDesc.textContent = 'Получайте статус груза прямо в бот при каждом изменении';
+        if (subscribeBtnText) subscribeBtnText.textContent = 'Уведомления';
+        if (iconContainer) {
+          iconContainer.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
+        }
+        if (subTitle) subTitle.textContent = 'Уведомления в Telegram';
+        if (subDesc) subDesc.textContent = 'Получайте статус груза прямо в бот при каждом изменении';
       }
     }
 
