@@ -100,7 +100,52 @@ app.post('/api/unsubscribe', (req, res) => {
   }
 });
 
-// 5. Developer Test Endpoints
+// In-memory cache for road route coordinates
+const roadRouteCache = new Map();
+
+// 5. Road Routing API (OSRM Highway Proxy with in-memory caching)
+app.get('/api/road-route', async (req, res) => {
+  try {
+    const { coords } = req.query;
+    if (!coords || typeof coords !== 'string') {
+      return res.status(400).json({ error: 'Missing coords query parameter' });
+    }
+
+    const cleanCoords = coords.trim();
+    const cached = roadRouteCache.get(cleanCoords);
+    if (cached && (Date.now() - cached.time < 7200000)) { // 2 hours cache
+      return res.json({ success: true, coordinates: cached.data });
+    }
+
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${cleanCoords}?overview=full&geometries=geojson`;
+    const response = await fetch(osrmUrl, {
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(6000)
+    });
+
+    if (!response.ok) {
+      throw new Error(`OSRM HTTP status ${response.status}`);
+    }
+
+    const data = await response.json();
+    if (data.code === 'Ok' && data.routes && data.routes[0]?.geometry?.coordinates) {
+      const latLngs = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      roadRouteCache.set(cleanCoords, { time: Date.now(), data: latLngs });
+      if (roadRouteCache.size > 200) {
+        const firstKey = roadRouteCache.keys().next().value;
+        roadRouteCache.delete(firstKey);
+      }
+      return res.json({ success: true, coordinates: latLngs });
+    }
+
+    res.status(422).json({ error: 'Could not calculate road route' });
+  } catch (err) {
+    console.warn('[Server] /api/road-route proxy error:', err.message);
+    res.status(502).json({ error: 'Routing service temporarily unavailable' });
+  }
+});
+
+// 6. Developer Test Endpoints
 app.post('/api/test-notify', async (req, res) => {
   const { telegramId, orderNumber, newStatus, newContext } = req.body;
   if (!telegramId || !orderNumber) {

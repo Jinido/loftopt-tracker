@@ -2759,6 +2759,40 @@
       }
     }
 
+    async function fetchRoadRoute(points) {
+      if (!points || points.length < 2) return null;
+      const coordsStr = points.map(p => `${p.lng},${p.lat}`).join(';');
+
+      // 1. Try our backend proxy first (cached & fast)
+      try {
+        const res = await fetch(`/api/road-route?coords=${encodeURIComponent(coordsStr)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.coordinates && data.coordinates.length > 1) {
+            return data.coordinates;
+          }
+        }
+      } catch (err) {
+        console.warn('Backend road route failed, trying direct OSRM...', err.message);
+      }
+
+      // 2. Direct fallback to public OSRM
+      try {
+        const directUrl = `https://router.project-osrm.org/route/v1/driving/${coordsStr}?overview=full&geometries=geojson`;
+        const res = await fetch(directUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.code === 'Ok' && data.routes && data.routes[0]?.geometry?.coordinates) {
+            return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          }
+        }
+      } catch (err) {
+        console.warn('Direct OSRM fallback failed:', err.message);
+      }
+
+      return null;
+    }
+
     function renderLeafletMap(item) {
       if (typeof L === 'undefined') {
         console.warn('Leaflet library is still loading or not available');
@@ -2810,10 +2844,10 @@
         mapModalSub.textContent = `${item.getGoodsAddr || 'Иу'} ➔ ${item.targetMarket || 'Москва'}`;
       }
 
-      // Draw polyline connecting only the real passed points
+      // Draw polyline connecting only the real passed points (first straight, then upgraded to highway road route)
       if (polylineCoords.length > 1) {
         // Outer glow line
-        L.polyline(polylineCoords, {
+        const glowLine = L.polyline(polylineCoords, {
           color: '#3b82f6',
           weight: 7,
           opacity: 0.35,
@@ -2829,6 +2863,16 @@
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(markerLayerGroup);
+
+        // Asynchronously fetch realistic road routing along highways
+        fetchRoadRoute(validPoints).then(roadCoords => {
+          if (roadCoords && roadCoords.length > 1) {
+            glowLine.setLatLngs(roadCoords);
+            routePolylineLayer.setLatLngs(roadCoords);
+          }
+        }).catch(err => {
+          console.warn('Road routing fallback active:', err.message);
+        });
       }
 
       // Add markers on each checkpoint
