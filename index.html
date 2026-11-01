@@ -1513,11 +1513,16 @@
       z-index: 1;
     }
 
-    .map-floating-btn {
+    .map-floating-controls {
       position: absolute;
       bottom: 18px;
       right: 18px;
       z-index: 500;
+      display: flex;
+      gap: 8px;
+    }
+
+    .map-floating-btn {
       background: rgba(23, 28, 38, 0.94);
       border: 1px solid rgba(255, 255, 255, 0.14);
       backdrop-filter: blur(12px);
@@ -1533,6 +1538,11 @@
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
       cursor: pointer;
       transition: all 0.2s ease;
+    }
+
+    .map-floating-btn.icon-only {
+      padding: 9px 12px;
+      font-size: 15px;
     }
 
     .map-floating-btn:hover {
@@ -1652,6 +1662,16 @@
     .leaflet-container {
       background: #0b0e14 !important;
       font-family: inherit !important;
+    }
+
+    /* OpenStreetMap Tiles Dark Mode Filter */
+    .leaflet-map-canvas:not(.light-tiles) .leaflet-tile-pane {
+      filter: brightness(0.68) invert(1) contrast(1.7) hue-rotate(200deg) saturate(0.3);
+    }
+
+    body.light-theme .leaflet-map-canvas .leaflet-tile-pane,
+    .leaflet-map-canvas.light-tiles .leaflet-tile-pane {
+      filter: none !important;
     }
 
     .leaflet-bar a {
@@ -1990,15 +2010,20 @@
       <div class="map-canvas-wrapper">
         <div id="leafletMap" class="leaflet-map-canvas"></div>
 
-        <!-- Floating re-center button -->
-        <button type="button" id="mapRecenterBtn" class="map-floating-btn" title="Где груз">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="12 8 8 12 12 16 12 8"></polygon>
-            <line x1="16" y1="12" x2="12" y2="12"></line>
-          </svg>
-          <span>Где груз</span>
-        </button>
+        <!-- Floating controls -->
+        <div class="map-floating-controls">
+          <button type="button" id="mapThemeToggleBtn" class="map-floating-btn icon-only" title="Сменить тему карты (день/ночь)">
+            <span>🌗</span>
+          </button>
+          <button type="button" id="mapRecenterBtn" class="map-floating-btn" title="Где груз">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="12 8 8 12 12 16 12 8"></polygon>
+              <line x1="16" y1="12" x2="12" y2="12"></line>
+            </svg>
+            <span>Где груз</span>
+          </button>
+        </div>
       </div>
 
       <!-- Current Location Legend Card -->
@@ -2824,10 +2849,10 @@
           attributionControl: false
         });
 
-        // CartoDB Dark Matter tiles (100% accessible from Russia without VPN)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          subdomains: 'abcd',
-          maxZoom: 19
+        // OpenStreetMap tiles (100% free, no API key required, zero limits)
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
         }).addTo(leafletMap);
 
         markerLayerGroup = L.layerGroup().addTo(leafletMap);
@@ -2936,6 +2961,17 @@
         if (e.target === mapModal) closeMapModal();
       });
     }
+    const mapThemeToggleBtn = document.getElementById('mapThemeToggleBtn');
+    if (mapThemeToggleBtn) {
+      mapThemeToggleBtn.addEventListener('click', () => {
+        const mapEl = document.getElementById('leafletMap');
+        if (mapEl) {
+          mapEl.classList.toggle('light-tiles');
+          triggerHaptic('light');
+        }
+      });
+    }
+
     if (mapRecenterBtn) {
       mapRecenterBtn.addEventListener('click', () => {
         if (leafletMap && currentTruckLatLng) {
