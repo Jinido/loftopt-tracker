@@ -184,9 +184,11 @@ app.post('/api/trigger-poll', async (req, res) => {
 });
 
 // SPA fallback: send index.html for direct URLs (e.g. /LFT991230016 or /app/LFT991230016)
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+    return res.sendFile(path.join(__dirname, 'index.html'));
+  }
+  next();
 });
 
 // Start Express Server
