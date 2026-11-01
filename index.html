@@ -13,6 +13,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Leaflet Interactive Maps CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <style>
     :root {
       /* Base Color Palette (Dark Theme Default) */
@@ -1189,6 +1193,489 @@
         display: none !important;
       }
     }
+
+    /* --- Cargo Map Card Banner --- */
+    .cargo-map-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s ease, transform 0.25s ease;
+    }
+
+    .cargo-map-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .map-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .map-card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .map-card-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-light);
+      border: 1px solid var(--chip-border);
+      color: #60a5fa;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      width: fit-content;
+    }
+
+    .pulsing-beacon {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      animation: beaconPulse 2s infinite;
+    }
+
+    @keyframes beaconPulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
+
+    .map-card-distance {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-card-distance .dist-val {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+    }
+
+    .map-card-distance .dist-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .map-progress-ring-wrap {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .progress-percent {
+      font-size: 22px;
+      font-weight: 800;
+      color: #60a5fa;
+      line-height: 1.1;
+    }
+
+    .progress-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .route-progress-bar-bg {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .route-progress-bar-fill {
+      height: 100%;
+      background: var(--accent-gradient);
+      border-radius: var(--radius-full);
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+
+    .route-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .btn-open-map {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 18px;
+      background: var(--accent-gradient);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    .btn-open-map:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-open-map:active {
+      transform: scale(0.98);
+    }
+
+    .arrow-right-icon {
+      margin-left: auto;
+      opacity: 0.8;
+      transition: transform 0.2s ease;
+    }
+
+    .btn-open-map:hover .arrow-right-icon {
+      transform: translateX(3px);
+    }
+
+    /* --- Map Fullscreen Modal / Drawer --- */
+    .map-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.28s ease, visibility 0.28s ease;
+    }
+
+    .map-modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .map-modal-container {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-color);
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .map-modal-overlay.active .map-modal-container {
+      transform: translateY(0);
+    }
+
+    .map-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: calc(var(--safe-top) + 14px) 18px 14px 18px;
+      background: rgba(15, 18, 24, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .map-modal-title-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .map-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .map-modal-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .map-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .map-close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+    }
+
+    .map-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(23, 28, 38, 0.9);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 15;
+      flex-shrink: 0;
+    }
+
+    .map-stat-chip {
+      background: rgba(15, 18, 24, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .map-stat-chip .chip-num {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+
+    .map-stat-chip .chip-txt {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+    }
+
+    .map-canvas-wrapper {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0b0e14;
+    }
+
+    .leaflet-map-canvas {
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .map-floating-btn {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      z-index: 500;
+      background: rgba(23, 28, 38, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: #f3f6fa;
+      padding: 9px 14px;
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .map-floating-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .map-location-card {
+      padding: 14px 18px calc(var(--safe-bottom) + 14px) 18px;
+      background: rgba(15, 18, 24, 0.96);
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .loc-icon-col {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      border: 1px solid var(--chip-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .loc-pulse-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 10px #3b82f6;
+      animation: beaconPulse 1.8s infinite;
+    }
+
+    .loc-text-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .loc-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .loc-desc {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 1px;
+    }
+
+    .loc-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Custom Leaflet Map Markers */
+    .custom-map-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-map-pin.truck {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #2563eb;
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.35), 0 4px 14px rgba(0,0,0,0.5);
+      border: 2px solid #ffffff;
+      animation: truckPulse 2s infinite;
+    }
+
+    @keyframes truckPulse {
+      0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6), 0 4px 14px rgba(0,0,0,0.5); }
+      70% { box-shadow: 0 0 0 12px rgba(37, 99, 235, 0), 0 4px 14px rgba(0,0,0,0.5); }
+      100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0), 0 4px 14px rgba(0,0,0,0.5); }
+    }
+
+    .custom-map-pin.terminal {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+      border: 2px solid #ffffff;
+    }
+
+    .custom-map-pin.terminal.origin {
+      background: #10b981;
+    }
+
+    .custom-map-pin.terminal.customs {
+      background: #f59e0b;
+    }
+
+    .custom-map-pin.terminal.dest {
+      background: #ef4444;
+    }
+
+    .leaflet-container {
+      background: #0b0e14 !important;
+      font-family: inherit !important;
+    }
+
+    .leaflet-bar a {
+      background-color: rgba(23, 28, 38, 0.9) !important;
+      color: #f3f6fa !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .leaflet-bar a:hover {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background: rgba(23, 28, 38, 0.95) !important;
+      color: #f3f6fa !important;
+      border-radius: 12px !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+    }
+
+    .leaflet-popup-tip {
+      background: rgba(23, 28, 38, 0.95) !important;
+    }
   </style>
 </head>
 <body>
@@ -1361,6 +1848,47 @@
         </div>
       </section>
 
+      <!-- Cargo Map Banner Card -->
+      <section class="cargo-map-card" id="cargoMapCard">
+        <div class="map-card-top">
+          <div class="map-card-info">
+            <div class="map-card-badge">
+              <span class="pulsing-beacon"></span>
+              <span id="mapCardStatus">В пути • Определение...</span>
+            </div>
+            <div class="map-card-distance">
+              <span class="dist-val" id="mapRemainingKm">— км</span>
+              <span class="dist-label">осталось до пункта назначения</span>
+            </div>
+          </div>
+          <div class="map-progress-ring-wrap">
+            <div class="progress-percent" id="mapProgressPercent">—%</div>
+            <div class="progress-sublabel">маршрута</div>
+          </div>
+        </div>
+
+        <div class="route-progress-bar-bg">
+          <div class="route-progress-bar-fill" id="mapProgressBarFill" style="width: 0%;"></div>
+        </div>
+
+        <div class="route-progress-labels">
+          <span id="mapCoveredLabel">Пройдено: — км</span>
+          <span id="mapTotalLabel">Всего: — км</span>
+        </div>
+
+        <button type="button" id="openMapBtn" class="btn-open-map">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+            <line x1="8" y1="2" x2="8" y2="18"></line>
+            <line x1="16" y1="6" x2="16" y2="22"></line>
+          </svg>
+          <span>Посмотреть маршрут на карте</span>
+          <svg class="arrow-right-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </section>
+
       <!-- Subscription Action Banner -->
       <section class="subscribe-card" id="subscribeCard">
         <div class="sub-header-row">
@@ -1414,6 +1942,75 @@
       <div class="modal-actions">
         <button type="button" id="openBotBtn" class="btn-modal-primary">Перейти в бота (@loftopt_bot)</button>
         <button type="button" id="closeModalBtn" class="btn-modal-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cargo Map Modal / Drawer -->
+  <div id="mapModal" class="map-modal-overlay">
+    <div class="map-modal-container">
+      <!-- Header -->
+      <div class="map-modal-header">
+        <div class="map-modal-title-col">
+          <div class="map-modal-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+              <line x1="8" y1="2" x2="8" y2="18"></line>
+              <line x1="16" y1="6" x2="16" y2="22"></line>
+            </svg>
+            <span>Маршрут груза</span>
+          </div>
+          <div class="map-modal-sub" id="mapModalSub">Иу ➔ Москва</div>
+        </div>
+        <button type="button" id="closeMapBtn" class="map-close-btn" aria-label="Закрыть">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Quick Stats Bar -->
+      <div class="map-stats-bar">
+        <div class="map-stat-chip">
+          <span class="chip-num" id="modalRemainingKm">—</span>
+          <span class="chip-txt">Осталось</span>
+        </div>
+        <div class="map-stat-chip">
+          <span class="chip-num" id="modalCoveredKm">—</span>
+          <span class="chip-txt">Пройдено</span>
+        </div>
+        <div class="map-stat-chip">
+          <span class="chip-num" id="modalProgressVal">—</span>
+          <span class="chip-txt">Прогресс</span>
+        </div>
+      </div>
+
+      <!-- Map Canvas -->
+      <div class="map-canvas-wrapper">
+        <div id="leafletMap" class="leaflet-map-canvas"></div>
+
+        <!-- Floating re-center button -->
+        <button type="button" id="mapRecenterBtn" class="map-floating-btn" title="Где груз">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="12 8 8 12 12 16 12 8"></polygon>
+            <line x1="16" y1="12" x2="12" y2="12"></line>
+          </svg>
+          <span>Где груз</span>
+        </button>
+      </div>
+
+      <!-- Current Location Legend Card -->
+      <div class="map-location-card">
+        <div class="loc-icon-col">
+          <div class="loc-pulse-dot"></div>
+        </div>
+        <div class="loc-text-col">
+          <div class="loc-title" id="mapModalCurrentTitle">Текущее положение</div>
+          <div class="loc-desc" id="mapModalCurrentDesc">Определяется...</div>
+          <div class="loc-time" id="mapModalCurrentTime"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -1664,6 +2261,26 @@
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
 
+    // Cargo Map elements
+    const cargoMapCard = document.getElementById('cargoMapCard');
+    const mapCardStatus = document.getElementById('mapCardStatus');
+    const mapRemainingKm = document.getElementById('mapRemainingKm');
+    const mapProgressPercent = document.getElementById('mapProgressPercent');
+    const mapProgressBarFill = document.getElementById('mapProgressBarFill');
+    const mapCoveredLabel = document.getElementById('mapCoveredLabel');
+    const mapTotalLabel = document.getElementById('mapTotalLabel');
+    const openMapBtn = document.getElementById('openMapBtn');
+    const mapModal = document.getElementById('mapModal');
+    const closeMapBtn = document.getElementById('closeMapBtn');
+    const mapRecenterBtn = document.getElementById('mapRecenterBtn');
+    const modalRemainingKm = document.getElementById('modalRemainingKm');
+    const modalCoveredKm = document.getElementById('modalCoveredKm');
+    const modalProgressVal = document.getElementById('modalProgressVal');
+    const mapModalSub = document.getElementById('mapModalSub');
+    const mapModalCurrentTitle = document.getElementById('mapModalCurrentTitle');
+    const mapModalCurrentDesc = document.getElementById('mapModalCurrentDesc');
+    const mapModalCurrentTime = document.getElementById('mapModalCurrentTime');
+
     // Subscription & Modal elements
     const subscribeCard = document.getElementById('subscribeCard');
     const subscribeBtn = document.getElementById('subscribeBtn');
@@ -1839,6 +2456,7 @@
 
       currentTrackingOrder = item;
       checkSubscriptionState(item);
+      initOrUpdateCargoMap(item);
 
       setViewState('result');
       triggerHaptic('success');
@@ -2126,6 +2744,213 @@
     subscribeBtn.addEventListener('click', () => {
       toggleSubscription();
     });
+
+    // --- Cargo Map Controller & Leaflet Integration ---
+    let leafletMap = null;
+    let routePolylineLayer = null;
+    let markerLayerGroup = null;
+    let currentTruckLatLng = null;
+
+    function initOrUpdateCargoMap(item) {
+      const dist = item.distance || {};
+      const remaining = dist.remainingKm || 0;
+      const covered = dist.coveredKm || 0;
+      const total = dist.totalKm || (remaining + covered) || 9200;
+      const progress = dist.progressPercent || Math.round((covered / (total || 1)) * 100) || 0;
+
+      if (cargoMapCard) {
+        cargoMapCard.style.display = 'block';
+        const latestDetail = (item.details && item.details.length > 0) ? item.details[0] : null;
+        const contextShort = latestDetail?.context?.split(',')[0] || item.trackStatus || 'В пути';
+        if (mapCardStatus) mapCardStatus.textContent = `${item.trackStatus || 'В пути'} • ${contextShort}`;
+        if (mapRemainingKm) mapRemainingKm.textContent = `~${remaining.toLocaleString('ru-RU')} км`;
+        if (mapProgressPercent) mapProgressPercent.textContent = `${progress}%`;
+        if (mapProgressBarFill) mapProgressBarFill.style.width = `${progress}%`;
+        if (mapCoveredLabel) mapCoveredLabel.textContent = `Пройдено: ~${covered.toLocaleString('ru-RU')} км`;
+        if (mapTotalLabel) mapTotalLabel.textContent = `Всего: ~${total.toLocaleString('ru-RU')} км`;
+      }
+
+      if (modalRemainingKm) modalRemainingKm.textContent = `~${remaining.toLocaleString('ru-RU')} км`;
+      if (modalCoveredKm) modalCoveredKm.textContent = `~${covered.toLocaleString('ru-RU')} км`;
+      if (modalProgressVal) modalProgressVal.textContent = `${progress}%`;
+      if (mapModalSub) mapModalSub.textContent = `${item.getGoodsAddr || 'Иу'} ➔ ${item.targetMarket || 'Москва'}`;
+
+      const latestStep = (item.details && item.details.length > 0) ? item.details[0] : null;
+      if (mapModalCurrentDesc) {
+        mapModalCurrentDesc.textContent = latestStep?.context || 'Товар в пути по маршруту';
+      }
+      if (mapModalCurrentTime) {
+        mapModalCurrentTime.textContent = latestStep?.trackTime ? `Фиксация: ${latestStep.trackTime}` : '';
+      }
+    }
+
+    function openMapModal() {
+      if (!currentTrackingOrder) return;
+      mapModal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      triggerHaptic('light');
+
+      if (tg?.BackButton) {
+        tg.BackButton.show();
+      }
+
+      setTimeout(() => {
+        renderLeafletMap(currentTrackingOrder);
+      }, 120);
+    }
+
+    function closeMapModal() {
+      mapModal.classList.remove('active');
+      document.body.style.overflow = '';
+      triggerHaptic('light');
+
+      if (tg?.BackButton) {
+        tg.BackButton.hide();
+      }
+    }
+
+    function renderLeafletMap(item) {
+      if (typeof L === 'undefined') {
+        console.warn('Leaflet library is still loading or not available');
+        return;
+      }
+
+      const container = document.getElementById('leafletMap');
+      if (!container) return;
+
+      if (!leafletMap) {
+        leafletMap = L.map('leafletMap', {
+          zoomControl: true,
+          attributionControl: false
+        });
+
+        // CartoDB Dark Matter tiles (100% accessible from Russia without VPN)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          subdomains: 'abcd',
+          maxZoom: 19
+        }).addTo(leafletMap);
+
+        markerLayerGroup = L.layerGroup().addTo(leafletMap);
+      } else {
+        markerLayerGroup.clearLayers();
+        if (routePolylineLayer) {
+          leafletMap.removeLayer(routePolylineLayer);
+          routePolylineLayer = null;
+        }
+      }
+
+      const routeMetrics = item.routeMetrics || {};
+      const polylineCoords = routeMetrics.routePolyline || [];
+      const origin = routeMetrics.origin || { lat: 29.40965, lng: 120.13144, name: 'Склад Иу' };
+      const dest = routeMetrics.destination || { lat: 55.6984, lng: 37.4265, name: 'Москва (Рябинск)' };
+      const customs = routeMetrics.customs || { lat: 44.1729, lng: 80.4188, name: 'Таможня Хоргос' };
+      const currentPos = routeMetrics.currentPosition || (polylineCoords.length > 0 ? { lat: polylineCoords[Math.floor(polylineCoords.length * 0.25)][0], lng: polylineCoords[Math.floor(polylineCoords.length * 0.25)][1] } : null);
+
+      currentTruckLatLng = currentPos ? [currentPos.lat, currentPos.lng] : null;
+
+      // 1. Draw Polyline
+      if (polylineCoords.length > 0) {
+        // Outer glow
+        L.polyline(polylineCoords, {
+          color: '#3b82f6',
+          weight: 7,
+          opacity: 0.35,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(markerLayerGroup);
+
+        // Core dashed route line
+        routePolylineLayer = L.polyline(polylineCoords, {
+          color: '#60a5fa',
+          weight: 3.5,
+          dashArray: '8, 8',
+          opacity: 0.9,
+          lineCap: 'round',
+          lineJoin: 'round'
+        }).addTo(markerLayerGroup);
+      }
+
+      // 2. Add Markers
+      // Origin: Warehouse
+      const originIcon = L.divIcon({
+        className: 'custom-map-pin terminal origin',
+        html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+      L.marker([origin.lat, origin.lng], { icon: originIcon })
+        .bindPopup(`<b>Отправление:</b> ${origin.name}`)
+        .addTo(markerLayerGroup);
+
+      // Customs: Khorgos
+      const customsIcon = L.divIcon({
+        className: 'custom-map-pin terminal customs',
+        html: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+      L.marker([customs.lat, customs.lng], { icon: customsIcon })
+        .bindPopup(`<b>Таможенный транзит:</b> ${customs.name}`)
+        .addTo(markerLayerGroup);
+
+      // Destination: Moscow
+      const destIcon = L.divIcon({
+        className: 'custom-map-pin terminal dest',
+        html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+      });
+      L.marker([dest.lat, dest.lng], { icon: destIcon })
+        .bindPopup(`<b>Пункт назначения:</b> ${dest.name}`)
+        .addTo(markerLayerGroup);
+
+      // Current Truck Position
+      if (currentPos) {
+        const truckIcon = L.divIcon({
+          className: 'custom-map-pin truck',
+          html: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
+          iconSize: [38, 38],
+          iconAnchor: [19, 19]
+        });
+        const latestStep = (item.details && item.details.length > 0) ? item.details[0] : null;
+        L.marker([currentPos.lat, currentPos.lng], { icon: truckIcon, zIndexOffset: 1000 })
+          .bindPopup(`<b>Груз в пути</b><br>${latestStep?.context || 'Текущая точка фиксации'}`)
+          .addTo(markerLayerGroup);
+      }
+
+      leafletMap.invalidateSize();
+      if (polylineCoords.length > 0) {
+        const bounds = L.latLngBounds(polylineCoords);
+        leafletMap.fitBounds(bounds, { padding: [36, 36] });
+      }
+    }
+
+    if (openMapBtn) {
+      openMapBtn.addEventListener('click', openMapModal);
+    }
+    if (closeMapBtn) {
+      closeMapBtn.addEventListener('click', closeMapModal);
+    }
+    if (mapModal) {
+      mapModal.addEventListener('click', (e) => {
+        if (e.target === mapModal) closeMapModal();
+      });
+    }
+    if (mapRecenterBtn) {
+      mapRecenterBtn.addEventListener('click', () => {
+        if (leafletMap && currentTruckLatLng) {
+          leafletMap.flyTo(currentTruckLatLng, 8, { duration: 1.2 });
+          triggerHaptic('light');
+        }
+      });
+    }
+    if (tg?.BackButton) {
+      tg.BackButton.onClick(() => {
+        if (mapModal && mapModal.classList.contains('active')) {
+          closeMapModal();
+        }
+      });
+    }
 
     // 8. Auto-search on Deep Link
     function checkDeepLink() {

@@ -1,4 +1,83 @@
-const API_URL = 'https://gateway-saas.baikalasia.com/bison-oms/oms/platform/searchTrack';
+const { calculateRouteMetrics } = require('./routeService');
+
+const API_URL = 'https://gateway-saas.baikalasia.com/bison-oms/oms/track/searchTrack?lang=ru_RU';
+
+function normalizeOrder(rawItem) {
+  if (!rawItem) return null;
+
+  const isNotFound = !rawItem.id && !rawItem.customerNo;
+  const orderNumber = rawItem.customerNo || rawItem.orderNo;
+
+  if (isNotFound) {
+    return {
+      orderNumber,
+      orderNo: rawItem.orderNo,
+      customerNo: null,
+      notFound: true,
+      message: 'Груз не найден в системе логистики'
+    };
+  }
+
+  // Target market normalization
+  let targetMarket = rawItem.targetMarket_dictText || rawItem.targetMarket || 'Рябинск';
+  const tm = String(targetMarket).trim();
+  if (/^рябинск$/i.test(tm)) {
+    targetMarket = 'Москва (Рябинск)';
+  } else if (/^рябиновая$/i.test(tm)) {
+    targetMarket = 'Москва (Рябиновая)';
+  } else if (/^(южные ворота|тяк|люблино|садовод|северные ворота)$/i.test(tm)) {
+    targetMarket = `Москва (${tm})`;
+  }
+
+  // Format track list (details)
+  const trackList = Array.isArray(rawItem.trackList) ? rawItem.trackList : [];
+  const details = trackList.map(t => ({
+    trackTime: t.appendTime || '',
+    trackStatus: t.trackStatus || '',
+    trackStatusId: t.trackStatusId || null,
+    context: t.contextForeign || t.context || '',
+    lat: t.lat ? Number(t.lat) : null,
+    lng: t.lng ? Number(t.lng) : null,
+    isChina: t.isChina
+  }));
+
+  const origin = rawItem.getGoodsAddr || 'Город Иу';
+  const currentStatus = rawItem.lastTrackStatus || rawItem.trackStatus || 'В пути';
+
+  // Calculate distance & route metrics
+  const routeMetrics = calculateRouteMetrics(
+    rawItem.lastLat,
+    rawItem.lastLng,
+    details,
+    origin,
+    targetMarket
+  );
+
+  return {
+    orderNumber: rawItem.customerNo || rawItem.orderNo,
+    orderNo: rawItem.orderNo,
+    customerNo: rawItem.customerNo,
+    status: currentStatus,
+    trackStatus: currentStatus,
+    trackStatusId: rawItem.lastTrackStatusId,
+    getGoodsAddr: origin,
+    targetMarket,
+    targetCity: rawItem.targetCity_dictText || 'Москва',
+    expectArriveTime: rawItem.expectArriveTime || null,
+    carBoxNo: rawItem.carBoxNo || null,
+    lastLat: rawItem.lastLat ? Number(rawItem.lastLat) : null,
+    lastLng: rawItem.lastLng ? Number(rawItem.lastLng) : null,
+    lastContext: rawItem.lastContextForeign || rawItem.lastContext || '',
+    details,
+    routeMetrics,
+    distance: {
+      coveredKm: routeMetrics.coveredKm,
+      remainingKm: routeMetrics.remainingKm,
+      totalKm: routeMetrics.totalKm,
+      progressPercent: routeMetrics.progressPercent
+    }
+  };
+}
 
 const baikalService = {
   /**
@@ -21,8 +100,7 @@ const baikalService = {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        orderNumbers: list,
-        lang: 'ru_RU'
+        stringList: list
       }),
       signal: AbortSignal.timeout(15000)
     });
@@ -31,24 +109,12 @@ const baikalService = {
       throw new Error(`Baikal API returned status ${response.status}`);
     }
 
-function normalizeOrder(item) {
-  if (!item) return item;
-  if (item.targetMarket) {
-    const tm = String(item.targetMarket).trim();
-    if (/^рябинск$/i.test(tm)) {
-      item.targetMarket = 'Москва (Рябинск)';
-    } else if (/^рябиновая$/i.test(tm)) {
-      item.targetMarket = 'Москва (Рябиновая)';
-    } else if (/^(южные ворота|тяк|люблино|садовод|северные ворота)$/i.test(tm)) {
-      item.targetMarket = `Москва (${tm})`;
-    }
-  }
-  return item;
-}
-
     const data = await response.json();
-    if (data && Array.isArray(data.result)) {
-      return data.result.map(normalizeOrder);
+    if (data && Array.isArray(data.result) && data.result.length > 0) {
+      // Find the tab containing all orders (usually "Все" at index 0)
+      const allTab = data.result.find(t => t.tab === 'Все') || data.result[0];
+      const items = Array.isArray(allTab.data) ? allTab.data : [];
+      return items.map(normalizeOrder).filter(Boolean);
     }
     return [];
   },
@@ -60,8 +126,8 @@ function normalizeOrder(item) {
     const results = await this.searchOrders([orderNumber]);
     if (!results || results.length === 0) return null;
     const item = results[0];
-    if (item.code === '400' || item.failMessage) {
-      return { notFound: true, message: item.failMessage || 'Груз не найден' };
+    if (item.notFound) {
+      return { notFound: true, message: item.message || 'Груз не найден' };
     }
     return item;
   }

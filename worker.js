@@ -50,7 +50,7 @@ async function pollAllOrders() {
           if (!orderNumber) continue;
 
           // If not found in logistics system
-          if (item.code === '400' || item.failMessage) continue;
+          if (item.code === '400' || item.failMessage || item.notFound) continue;
 
           const details = Array.isArray(item.details) ? item.details : [];
           const latestStep = details.length > 0 ? details[0] : null;
