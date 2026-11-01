@@ -2930,12 +2930,28 @@
       let trackParam = urlParams.get('track');
       let shouldOpenMap = urlParams.get('openMap') === '1' || urlParams.get('view') === 'map';
 
+      // 1. Telegram Mini App Direct Link: https://t.me/loftopt_bot/app?startapp=LFT991230016
       if (!trackParam && tg?.initDataUnsafe?.start_param) {
         const sp = tg.initDataUnsafe.start_param;
         if (sp.includes('_map')) {
           shouldOpenMap = true;
         }
         trackParam = sp.replace(/^track_/, '').replace(/_map$/, '');
+      }
+
+      // 2. URL Pathname fallback: https://track.loftopt.com/LFT991230016 or /app/LFT991230016
+      if (!trackParam) {
+        const cleanPath = window.location.pathname.replace(/^\/+|\/+$/g, '');
+        if (cleanPath && !cleanPath.includes('.')) {
+          const parts = cleanPath.split('/');
+          const lastPart = parts[parts.length - 1];
+          if (lastPart && lastPart.toLowerCase() !== 'app' && lastPart.length >= 4) {
+            if (lastPart.includes('_map')) {
+              shouldOpenMap = true;
+            }
+            trackParam = lastPart.replace(/_map$/, '');
+          }
+        }
       }
 
       if (trackParam && trackParam.trim()) {

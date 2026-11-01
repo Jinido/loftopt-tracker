@@ -138,6 +138,12 @@ app.post('/api/trigger-poll', async (req, res) => {
   res.json({ message: 'Poll cycle triggered in background' });
 });
 
+// SPA fallback: send index.html for direct URLs (e.g. /LFT991230016 or /app/LFT991230016)
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Start Express Server
 app.listen(PORT, () => {
   console.log(`[Server] LOFT OPT Cargo Tracker running on http://localhost:${PORT}`);
