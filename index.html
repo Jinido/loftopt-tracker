@@ -1350,74 +1350,45 @@
 
     .map-modal-header {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
-      padding: calc(var(--safe-top) + 14px) 18px 14px 18px;
+      justify-content: center;
+      text-align: center;
+      padding: calc(var(--safe-top) + 12px) 16px 12px 16px;
       background: rgba(15, 18, 24, 0.95);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--card-border);
       z-index: 20;
       flex-shrink: 0;
-    }
-
-    .map-modal-brand-col {
-      display: flex;
-      flex-direction: column;
       gap: 3px;
     }
 
-    .map-brand-logo-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
     .map-brand-title {
-      font-size: 19px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: 0.8px;
       color: var(--text-primary);
-      line-height: 1.1;
+      line-height: 1.2;
+      text-align: center;
     }
 
-    .map-brand-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: var(--accent-light);
-      border: 1px solid var(--chip-border);
-      color: #60a5fa;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
+    .map-brand-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.2;
     }
 
     .map-modal-sub {
       font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .map-close-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .map-close-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: var(--text-primary);
+      color: var(--text-muted);
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.2;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
     }
 
     .map-stats-bar {
@@ -1939,19 +1910,9 @@
     <div class="map-modal-container">
       <!-- Header with LOFT OPT Branding -->
       <div class="map-modal-header">
-        <div class="map-modal-brand-col">
-          <div class="map-brand-logo-row">
-            <span class="map-brand-title">LOFT OPT</span>
-            <span class="map-brand-badge">Маршрут на карте</span>
-          </div>
-          <div class="map-modal-sub" id="mapModalSub">Иу ➔ Москва</div>
-        </div>
-        <button type="button" id="closeMapBtn" class="map-close-btn" aria-label="Закрыть" title="Закрыть карту">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <div class="map-brand-title">LOFT OPT</div>
+        <div class="map-brand-subtitle">Маршрут на карте</div>
+        <div class="map-modal-sub" id="mapModalSub">Иу ➔ Москва</div>
       </div>
 
       <!-- Quick Stats Bar -->
@@ -2840,7 +2801,7 @@
       currentTruckLatLng = currentPos ? [currentPos.lat, currentPos.lng] : null;
 
       if (mapModalSub) {
-        mapModalSub.textContent = `${validPoints.length} контрольных точек пути • ${item.getGoodsAddr || 'Иу'} ➔ ${item.targetMarket || 'Москва'}`;
+        mapModalSub.textContent = `${item.getGoodsAddr || 'Иу'} ➔ ${item.targetMarket || 'Москва'}`;
       }
 
       // Draw polyline connecting only the real passed points
@@ -2951,6 +2912,11 @@
         }
       });
     }
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mapModal && mapModal.classList.contains('active')) {
+        closeMapModal();
+      }
+    });
 
     // 8. Auto-search on Deep Link
     function checkDeepLink() {
