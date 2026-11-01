@@ -1659,6 +1659,30 @@
       background: #ef4444;
     }
 
+    .custom-map-pin.checkpoint {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 2px solid #3b82f6;
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .custom-map-pin.checkpoint:hover {
+      transform: scale(1.15);
+      border-color: #60a5fa;
+      background: #2563eb;
+      color: #ffffff;
+    }
+
     .leaflet-container {
       background: #0b0e14 !important;
       font-family: inherit !important;
@@ -2864,18 +2888,30 @@
         }
       }
 
-      const routeMetrics = item.routeMetrics || {};
-      const polylineCoords = routeMetrics.routePolyline || [];
-      const origin = routeMetrics.origin || { lat: 29.40965, lng: 120.13144, name: 'Склад Иу' };
-      const dest = routeMetrics.destination || { lat: 55.6984, lng: 37.4265, name: 'Москва (Рябинск)' };
-      const customs = routeMetrics.customs || { lat: 44.1729, lng: 80.4188, name: 'Таможня Хоргос' };
-      const currentPos = routeMetrics.currentPosition || (polylineCoords.length > 0 ? { lat: polylineCoords[Math.floor(polylineCoords.length * 0.25)][0], lng: polylineCoords[Math.floor(polylineCoords.length * 0.25)][1] } : null);
+      // 1. Extract only REAL GPS checkpoints passed by cargo
+      // item.details is in reverse chronological order (0 is latest) -> reverse() gives chronological order
+      const validPoints = (item.details || [])
+        .filter(d => d.lat && d.lng && !isNaN(d.lat) && !isNaN(d.lng))
+        .map(d => ({
+          lat: Number(d.lat),
+          lng: Number(d.lng),
+          status: d.trackStatus || 'В пути',
+          time: d.trackTime || '',
+          context: d.context || ''
+        }))
+        .reverse();
 
+      const polylineCoords = validPoints.map(p => [p.lat, p.lng]);
+      const currentPos = validPoints.length > 0 ? validPoints[validPoints.length - 1] : null;
       currentTruckLatLng = currentPos ? [currentPos.lat, currentPos.lng] : null;
 
-      // 1. Draw Polyline
-      if (polylineCoords.length > 0) {
-        // Outer glow
+      if (mapModalSub) {
+        mapModalSub.textContent = `${validPoints.length} контрольных точек пути • ${item.getGoodsAddr || 'Иу'} ➔ ${item.targetMarket || 'Москва'}`;
+      }
+
+      // Draw polyline connecting only the real passed points
+      if (polylineCoords.length > 1) {
+        // Outer glow line
         L.polyline(polylineCoords, {
           color: '#3b82f6',
           weight: 7,
@@ -2884,69 +2920,63 @@
           lineJoin: 'round'
         }).addTo(markerLayerGroup);
 
-        // Core dashed route line
+        // Core solid line
         routePolylineLayer = L.polyline(polylineCoords, {
-          color: '#60a5fa',
+          color: '#3b82f6',
           weight: 3.5,
-          dashArray: '8, 8',
-          opacity: 0.9,
+          opacity: 0.95,
           lineCap: 'round',
           lineJoin: 'round'
         }).addTo(markerLayerGroup);
       }
 
-      // 2. Add Markers
-      // Origin: Warehouse
-      const originIcon = L.divIcon({
-        className: 'custom-map-pin terminal origin',
-        html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-      L.marker([origin.lat, origin.lng], { icon: originIcon })
-        .bindPopup(`<b>Отправление:</b> ${origin.name}`)
-        .addTo(markerLayerGroup);
+      // Add markers on each checkpoint
+      validPoints.forEach((point, index) => {
+        const isFirst = (index === 0);
+        const isLatest = (index === validPoints.length - 1);
 
-      // Customs: Khorgos
-      const customsIcon = L.divIcon({
-        className: 'custom-map-pin terminal customs',
-        html: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        if (isLatest) {
+          // Current position (Truck icon, pulsing)
+          const truckIcon = L.divIcon({
+            className: 'custom-map-pin truck',
+            html: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
+            iconSize: [38, 38],
+            iconAnchor: [19, 19]
+          });
+          L.marker([point.lat, point.lng], { icon: truckIcon, zIndexOffset: 1000 })
+            .bindPopup(`<b>🚚 Текущее положение:</b><br><span style="color:#60a5fa">${point.status}</span><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+            .addTo(markerLayerGroup);
+        } else if (isFirst) {
+          // Origin / Warehouse
+          const originIcon = L.divIcon({
+            className: 'custom-map-pin terminal origin',
+            html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          L.marker([point.lat, point.lng], { icon: originIcon, zIndexOffset: 500 })
+            .bindPopup(`<b>📦 Склад отправления:</b><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+            .addTo(markerLayerGroup);
+        } else {
+          // Intermediate Checkpoints
+          const checkIcon = L.divIcon({
+            className: 'custom-map-pin checkpoint',
+            html: `<span>${index + 1}</span>`,
+            iconSize: [24, 24],
+            iconAnchor: [12, 12]
+          });
+          L.marker([point.lat, point.lng], { icon: checkIcon })
+            .bindPopup(`<b>Этап #${index + 1} (${point.status}):</b><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+            .addTo(markerLayerGroup);
+        }
       });
-      L.marker([customs.lat, customs.lng], { icon: customsIcon })
-        .bindPopup(`<b>Таможенный транзит:</b> ${customs.name}`)
-        .addTo(markerLayerGroup);
-
-      // Destination: Moscow
-      const destIcon = L.divIcon({
-        className: 'custom-map-pin terminal dest',
-        html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>',
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
-      });
-      L.marker([dest.lat, dest.lng], { icon: destIcon })
-        .bindPopup(`<b>Пункт назначения:</b> ${dest.name}`)
-        .addTo(markerLayerGroup);
-
-      // Current Truck Position
-      if (currentPos) {
-        const truckIcon = L.divIcon({
-          className: 'custom-map-pin truck',
-          html: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>',
-          iconSize: [38, 38],
-          iconAnchor: [19, 19]
-        });
-        const latestStep = (item.details && item.details.length > 0) ? item.details[0] : null;
-        L.marker([currentPos.lat, currentPos.lng], { icon: truckIcon, zIndexOffset: 1000 })
-          .bindPopup(`<b>Груз в пути</b><br>${latestStep?.context || 'Текущая точка фиксации'}`)
-          .addTo(markerLayerGroup);
-      }
 
       leafletMap.invalidateSize();
-      if (polylineCoords.length > 0) {
+      if (polylineCoords.length > 1) {
         const bounds = L.latLngBounds(polylineCoords);
-        leafletMap.fitBounds(bounds, { padding: [36, 36] });
+        leafletMap.fitBounds(bounds, { padding: [45, 45], maxZoom: 10 });
+      } else if (polylineCoords.length === 1) {
+        leafletMap.setView(polylineCoords[0], 8);
       }
     }
 
