@@ -149,24 +149,51 @@ bot.callbackQuery(/^unsub:(.+)$/, async (ctx) => {
   }
 });
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 /**
  * Send status update notification to a subscriber
  */
 async function sendStatusNotification(telegramId, orderItem, latestStep) {
-  const orderNumber = orderItem.orderNumber || orderItem.orderNo;
-  const status = latestStep?.trackStatus || orderItem.trackStatus || 'Статус обновлен';
+  const orderNumber = orderItem.orderNumber || orderItem.orderNo || '—';
+  const point = (latestStep?.context || orderItem.lastContext || latestStep?.trackStatus || orderItem.trackStatus || 'В пути').trim();
   const time = formatTimeRu(latestStep?.trackTime);
-  const origin = orderItem.getGoodsAddr || 'Фошань';
-  const destination = orderItem.targetMarket || orderItem.arriveCity || 'Москва (Рябинск)';
-  const route = (origin && destination) ? `${origin} ➔ ${destination}` : (destination || origin || 'Уточняется');
-  const expectDate = formatExpectDateRu(orderItem.expectArriveTime);
+
+  // Distance metrics
+  const distance = orderItem.distance || orderItem.routeMetrics;
+  let coveredKm = distance?.coveredKm;
+  let remainingKm = distance?.remainingKm;
+
+  if (coveredKm == null || remainingKm == null) {
+    try {
+      const routeService = require('./routeService');
+      const rm = routeService.calculateRouteMetrics(
+        orderItem.lastLat,
+        orderItem.lastLng,
+        orderItem.details,
+        orderItem.getGoodsAddr,
+        orderItem.targetMarket
+      );
+      if (coveredKm == null) coveredKm = rm.coveredKm;
+      if (remainingKm == null) remainingKm = rm.remainingKm;
+    } catch (_) {}
+  }
+
+  const coveredStr = (coveredKm != null && !isNaN(coveredKm)) ? `~${Number(coveredKm).toLocaleString('ru-RU')} км` : '—';
+  const remainingStr = (remainingKm != null && !isNaN(remainingKm)) ? `~${Number(remainingKm).toLocaleString('ru-RU')} км` : '—';
 
   let message = `📦 <b>Обновление статуса!</b>\n\n`;
-  message += `Груз: <code>${orderNumber}</code>\n`;
-  message += `📍 Статус: <b>${status}</b>\n`;
-  message += `🕒 Время: ${time}\n`;
-  message += `🛣 Маршрут: ${route}\n`;
-  message += `📅 Ожидаемое прибытие: ${expectDate}`;
+  message += `Груз: <code>${escapeHtml(orderNumber)}</code>\n`;
+  message += `📍 Статус: <b>${escapeHtml(point)}</b>\n`;
+  message += `🕒 Время: ${escapeHtml(time)}\n`;
+  message += `🚗 Пройдено: ${coveredStr}\n`;
+  message += `🏁 Осталось: ${remainingStr}`;
 
   // Notification buttons: "Открыть" (primary blue) and "Карта" (success green)
   const reply_markup = {

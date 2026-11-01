@@ -109,17 +109,24 @@ app.post('/api/test-notify', async (req, res) => {
 
   const dummyItem = {
     orderNumber,
-    trackStatus: newStatus || 'Прибыл на распределительный склад',
+    trackStatus: newStatus || 'В пути',
     getGoodsAddr: 'Гуанчжоу',
     targetMarket: 'Москва (Южные Ворота)',
     carBoxNo: 'CARGO-774-RU',
-    expectArriveTime: new Date(Date.now() + 86400000 * 3).toISOString()
+    lastLat: 34.048983,
+    lastLng: 109.89995,
+    distance: {
+      coveredKm: 2268,
+      remainingKm: 6931,
+      totalKm: 9199,
+      progressPercent: 25
+    }
   };
 
   const dummyStep = {
-    trackStatus: newStatus || 'Прибыл на распределительный склад',
+    trackStatus: newStatus || 'В пути',
     trackTime: new Date().toLocaleString('ru-RU'),
-    context: newContext || 'Партия принята к сортировке и таможенному оформлению'
+    context: newContext || 'Район обслуживания Шанлуо, район Шанчжоу, город Шанлуо, провинция Шэньси'
   };
 
   const sent = await sendStatusNotification(telegramId, dummyItem, dummyStep);
