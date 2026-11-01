@@ -1361,19 +1361,39 @@
       flex-shrink: 0;
     }
 
-    .map-modal-title-col {
+    .map-modal-brand-col {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
     }
 
-    .map-modal-title {
+    .map-brand-logo-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 16px;
-      font-weight: 700;
+    }
+
+    .map-brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
       color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .map-brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--accent-light);
+      border: 1px solid var(--chip-border);
+      color: #60a5fa;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
     }
 
     .map-modal-sub {
@@ -1917,20 +1937,16 @@
   <!-- Cargo Map Modal / Drawer -->
   <div id="mapModal" class="map-modal-overlay">
     <div class="map-modal-container">
-      <!-- Header -->
+      <!-- Header with LOFT OPT Branding -->
       <div class="map-modal-header">
-        <div class="map-modal-title-col">
-          <div class="map-modal-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
-              <line x1="8" y1="2" x2="8" y2="18"></line>
-              <line x1="16" y1="6" x2="16" y2="22"></line>
-            </svg>
-            <span>Маршрут груза</span>
+        <div class="map-modal-brand-col">
+          <div class="map-brand-logo-row">
+            <span class="map-brand-title">LOFT OPT</span>
+            <span class="map-brand-badge">Маршрут на карте</span>
           </div>
           <div class="map-modal-sub" id="mapModalSub">Иу ➔ Москва</div>
         </div>
-        <button type="button" id="closeMapBtn" class="map-close-btn" aria-label="Закрыть">
+        <button type="button" id="closeMapBtn" class="map-close-btn" aria-label="Закрыть" title="Закрыть карту">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
