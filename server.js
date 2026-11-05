@@ -13,8 +13,16 @@ const PORT = process.env.PORT || 8085;
 app.use(cors());
 app.use(express.json());
 
-// Serve static frontend files (Mini App)
-app.use(express.static(path.join(__dirname)));
+// Serve static frontend files (Mini App) with no-cache for HTML
+app.use(express.static(path.join(__dirname), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
 // 1. Cargo Tracking API (Proxy to Baikal Logistics to avoid CORS / rate issues)
 app.post('/api/track', async (req, res) => {

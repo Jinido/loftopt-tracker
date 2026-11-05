@@ -133,7 +133,7 @@ const baikalService = {
    * @param {string} orderNumber 
    */
   async getOrderDetail(orderNumber) {
-    const apiKey = process.env.BAIKAL_API_KEY;
+    const apiKey = process.env.BAIKAL_API_KEY || 'f3db399d588b474e860bda85113f6381';
     if (!apiKey) return null;
 
     const ordNo = String(orderNumber).trim().toUpperCase();

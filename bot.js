@@ -23,6 +23,7 @@ function getWebAppUrl(track = '', options = {}) {
   if (options && options.openMap) {
     params.set('openMap', '1');
   }
+  params.set('v', '2');
   const qs = params.toString();
   return qs ? `${base}/?${qs}` : base;
 }
