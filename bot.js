@@ -195,6 +195,21 @@ async function sendStatusNotification(telegramId, orderItem, latestStep) {
   message += `🚗 Пройдено: ${coveredStr}\n`;
   message += `🏁 Осталось: ${remainingStr}`;
 
+  // Cargo Specs if available
+  const specParts = [];
+  if (orderItem.quantityBox) specParts.push(`${orderItem.quantityBox} мест`);
+  if (orderItem.totalWeight) {
+    const w = parseFloat(orderItem.totalWeight);
+    specParts.push(`${!isNaN(w) ? w.toLocaleString('ru-RU') : orderItem.totalWeight} кг`);
+  }
+  if (orderItem.totalVolume) {
+    const v = parseFloat(orderItem.totalVolume);
+    specParts.push(`${!isNaN(v) ? v.toLocaleString('ru-RU') : orderItem.totalVolume} м³`);
+  }
+  if (specParts.length > 0) {
+    message += `\nПараметры: ${escapeHtml(specParts.join(' · '))}`;
+  }
+
   // Notification buttons: "Открыть" (primary blue) and "Карта" (success green)
   const reply_markup = {
     inline_keyboard: [

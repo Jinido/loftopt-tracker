@@ -1,6 +1,7 @@
 const { calculateRouteMetrics } = require('./routeService');
 
 const API_URL = 'https://gateway-saas.baikalasia.com/bison-oms/oms/track/searchTrack?lang=ru_RU';
+const DETAIL_API_URL = process.env.BAIKAL_DETAIL_API_URL || 'https://gateway-saas.baikalasia.com/oapi/v1/order/detail';
 
 function normalizeOrder(rawItem) {
   if (!rawItem) return null;
@@ -68,6 +69,14 @@ function normalizeOrder(rawItem) {
     lastLat: rawItem.lastLat ? Number(rawItem.lastLat) : null,
     lastLng: rawItem.lastLng ? Number(rawItem.lastLng) : null,
     lastContext: rawItem.lastContextForeign || rawItem.lastContext || '',
+    totalWeight: null,
+    totalVolume: null,
+    quantityBox: null,
+    totalDensity: null,
+    packagedFiles: [],
+    goodsFiles: [],
+    goodsName: '',
+    businessType: '',
     details,
     routeMetrics,
     distance: {
@@ -120,15 +129,123 @@ const baikalService = {
   },
 
   /**
-   * Search single order helper
+   * Fetch order details (photos, packaging, weight, volume) from Baikal Open API v1
+   * @param {string} orderNumber 
+   */
+  async getOrderDetail(orderNumber) {
+    const apiKey = process.env.BAIKAL_API_KEY;
+    if (!apiKey) return null;
+
+    const ordNo = String(orderNumber).trim().toUpperCase();
+    if (!ordNo) return null;
+
+    try {
+      const response = await fetch(DETAIL_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'apiKey': apiKey,
+          'lang': 'ru_RU'
+        },
+        body: JSON.stringify({ ordNo }),
+        signal: AbortSignal.timeout(8000)
+      });
+
+      if (!response.ok) {
+        console.warn(`[BaikalService] Detail API HTTP error ${response.status}`);
+        return null;
+      }
+
+      const json = await response.json();
+      if (json && json.success && json.result) {
+        return json.result;
+      }
+      return null;
+    } catch (err) {
+      console.warn(`[BaikalService] Detail API fetch failed for ${ordNo}:`, err.message);
+      return null;
+    }
+  },
+
+  /**
+   * Search single order helper with merged tracking and detail metrics
    */
   async searchSingle(orderNumber) {
-    const results = await this.searchOrders([orderNumber]);
-    if (!results || results.length === 0) return null;
-    const item = results[0];
-    if (item.notFound) {
-      return { notFound: true, message: item.message || 'Груз не найден' };
+    const cleanNum = String(orderNumber).trim().toUpperCase();
+    if (!cleanNum) return null;
+
+    // Fetch tracking checkpoints and details concurrently
+    const [trackingResults, detailData] = await Promise.all([
+      this.searchOrders([cleanNum]).catch(err => {
+        console.warn('[BaikalService] Tracking search error:', err.message);
+        return [];
+      }),
+      this.getOrderDetail(cleanNum).catch(() => null)
+    ]);
+
+    let item = (trackingResults && trackingResults.length > 0) ? trackingResults[0] : null;
+
+    // If tracking not found but detailData exists
+    if (!item || item.notFound) {
+      if (detailData) {
+        return {
+          orderNumber: detailData.customerNo || detailData.orderNo || cleanNum,
+          orderNo: detailData.orderNo,
+          customerNo: detailData.customerNo,
+          status: detailData.completeTime ? 'Выдан' : (detailData.sendTime ? 'В пути' : 'Поступил на склад'),
+          trackStatus: detailData.completeTime ? 'Выдан' : (detailData.sendTime ? 'В пути' : 'Поступил на склад'),
+          getGoodsAddr: 'Склад в Китае',
+          targetMarket: 'Москва',
+          targetCity: 'Москва',
+          expectArriveTime: detailData.expectArriveTime || null,
+          totalWeight: detailData.totalWeight || null,
+          totalVolume: detailData.totalVolume || null,
+          quantityBox: detailData.quantityBox || null,
+          totalDensity: detailData.totalDensity || null,
+          packagedFiles: Array.isArray(detailData.packagedFiles) ? detailData.packagedFiles : [],
+          goodsFiles: Array.isArray(detailData.goodsFiles) ? detailData.goodsFiles : [],
+          goodsName: detailData.goodsName || '',
+          businessType: detailData.businessType || '',
+          details: [],
+          distance: {
+            coveredKm: null,
+            remainingKm: null,
+            totalKm: null,
+            progressPercent: 0
+          }
+        };
+      }
+      if (item && item.notFound) {
+        return { notFound: true, message: item.message || 'Груз не найден' };
+      }
+      return null;
     }
+
+    // Merge detail data into the tracking item
+    let detail = detailData;
+    // If detail wasn't resolved by the primary code (e.g. user entered customerNo or vice-versa), try with the other
+    if (!detail) {
+      const altNum = (cleanNum === item.orderNo ? item.customerNo : item.orderNo);
+      if (altNum && altNum !== cleanNum) {
+        detail = await this.getOrderDetail(altNum);
+      }
+    }
+
+    if (detail) {
+      item.totalWeight = detail.totalWeight || null;
+      item.totalVolume = detail.totalVolume || null;
+      item.quantityBox = detail.quantityBox || null;
+      item.totalDensity = detail.totalDensity || null;
+      item.packagedFiles = Array.isArray(detail.packagedFiles) ? detail.packagedFiles : [];
+      item.goodsFiles = Array.isArray(detail.goodsFiles) ? detail.goodsFiles : [];
+      item.goodsName = detail.goodsName || '';
+      item.businessType = detail.businessType || '';
+      if (!item.expectArriveTime && detail.expectArriveTime) {
+        item.expectArriveTime = detail.expectArriveTime;
+      }
+    }
+
     return item;
   }
 };

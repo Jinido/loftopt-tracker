@@ -42,6 +42,40 @@ app.post('/api/track', async (req, res) => {
   }
 });
 
+// Image proxy for cargo photos (bypasses Aliyun OSS forced downloads & ensures inline display)
+app.get('/api/image-proxy', async (req, res) => {
+  try {
+    const rawUrl = req.query.url;
+    if (!rawUrl || typeof rawUrl !== 'string') {
+      return res.status(400).send('Missing url parameter');
+    }
+
+    const parsed = new URL(rawUrl);
+    if (!parsed.hostname.endsWith('aliyuncs.com') && !parsed.hostname.endsWith('baikalasia.com')) {
+      return res.status(403).send('Forbidden host');
+    }
+
+    const response = await fetch(rawUrl, {
+      signal: AbortSignal.timeout(10000)
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).send('Failed to load image');
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+
+    const arrayBuffer = await response.arrayBuffer();
+    res.send(Buffer.from(arrayBuffer));
+  } catch (err) {
+    console.error('[ImageProxy] Error:', err.message);
+    res.status(500).send('Error loading image');
+  }
+});
+
 // 2. Subscription Status API
 app.get('/api/subscription-status', (req, res) => {
   const { telegramId, orderNumber } = req.query;

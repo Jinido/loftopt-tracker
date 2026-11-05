@@ -842,6 +842,293 @@
       transform: none;
     }
 
+    /* Cargo Specs Card (Weight, Volume, Box count) */
+    .specs-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      margin-top: 14px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+      display: none;
+    }
+
+    .specs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .specs-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .specs-title-group h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .specs-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--accent-light);
+      color: #60a5fa;
+    }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .spec-item {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: var(--radius-md);
+      padding: 12px 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .spec-val {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.15;
+    }
+
+    .spec-unit {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-left: 2px;
+    }
+
+    .spec-lbl {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* Cargo Photos Card */
+    .photos-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      margin-top: 14px;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+      display: none;
+    }
+
+    .photos-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .photos-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .photos-title-group h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .photos-counter {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+
+    .photos-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+      gap: 10px;
+    }
+
+    .photo-thumb {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .photo-thumb:hover {
+      transform: translateY(-2px) scale(1.02);
+      border-color: #3b82f6;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .photo-thumb:active {
+      transform: scale(0.97);
+    }
+
+    .photo-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.2s ease;
+    }
+
+    .photo-thumb .photo-zoom-icon {
+      position: absolute;
+      right: 5px;
+      bottom: 5px;
+      width: 22px;
+      height: 22px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+
+    .photo-thumb:hover .photo-zoom-icon {
+      opacity: 1;
+      background: #2563eb;
+    }
+
+    /* Photo Lightbox Modal */
+    .photo-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.94);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 3000;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+
+    .photo-modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .photo-modal-top {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      z-index: 10;
+    }
+
+    .photo-modal-counter {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .photo-modal-close {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.12);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .photo-modal-close:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .photo-modal-stage {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .photo-modal-img {
+      max-width: 100%;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .photo-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 15;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .photo-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .photo-nav-btn.prev {
+      left: 14px;
+    }
+
+    .photo-nav-btn.next {
+      right: 14px;
+    }
+
     /* Bot Modal */
     .modal-overlay {
       position: fixed;
@@ -1849,6 +2136,68 @@
         </div>
       </section>
 
+      <!-- Cargo Specifications Card (Weight, Volume, Box Count) -->
+      <section class="specs-card" id="cargoSpecsCard">
+        <div class="specs-header">
+          <div class="specs-title-group">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <h3>Параметры груза</h3>
+          </div>
+          <span class="specs-badge" id="resBusinessType">Упакован</span>
+        </div>
+
+        <div class="specs-grid">
+          <!-- Weight -->
+          <div class="spec-item">
+            <div>
+              <span class="spec-val" id="resWeight">—</span>
+              <span class="spec-unit">кг</span>
+            </div>
+            <span class="spec-lbl">Вес</span>
+          </div>
+
+          <!-- Volume -->
+          <div class="spec-item">
+            <div>
+              <span class="spec-val" id="resVolume">—</span>
+              <span class="spec-unit">м³</span>
+            </div>
+            <span class="spec-lbl">Объём</span>
+          </div>
+
+          <!-- Quantity / Box Count -->
+          <div class="spec-item">
+            <div>
+              <span class="spec-val" id="resQuantityBox">—</span>
+              <span class="spec-unit">мест</span>
+            </div>
+            <span class="spec-lbl">Мест</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cargo Photos Card (Photos after packaging) -->
+      <section class="photos-card" id="cargoPhotosCard">
+        <div class="photos-header">
+          <div class="photos-title-group">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <h3>Фото груза после упаковки</h3>
+          </div>
+          <span class="photos-counter" id="resPhotosCount">0 фото</span>
+        </div>
+
+        <div class="photos-gallery" id="photosGallery">
+          <!-- Dynamically populated thumbnails -->
+        </div>
+      </section>
+
       <!-- Vertical Timeline Card -->
       <section class="timeline-card">
         <div class="timeline-header">
@@ -1884,6 +2233,32 @@
         <button type="button" id="openBotBtn" class="btn-modal-primary">Перейти в бота (@loftopt_bot)</button>
         <button type="button" id="closeModalBtn" class="btn-modal-secondary">Отмена</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Photo Lightbox Modal -->
+  <div id="photoModal" class="photo-modal-overlay">
+    <div class="photo-modal-top">
+      <span class="photo-modal-counter" id="photoModalCounter">1 / 1</span>
+      <button type="button" class="photo-modal-close" id="photoModalCloseBtn" aria-label="Закрыть">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    <div class="photo-modal-stage" id="photoModalStage">
+      <button type="button" class="photo-nav-btn prev" id="photoPrevBtn" aria-label="Предыдущее фото">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <img id="photoModalImg" class="photo-modal-img" src="" alt="Фотография груза" />
+      <button type="button" class="photo-nav-btn next" id="photoNextBtn" aria-label="Следующее фото">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
     </div>
   </div>
 
@@ -2193,6 +2568,28 @@
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
 
+    // Cargo Specs & Photos elements
+    const cargoSpecsCard = document.getElementById('cargoSpecsCard');
+    const resWeight = document.getElementById('resWeight');
+    const resVolume = document.getElementById('resVolume');
+    const resQuantityBox = document.getElementById('resQuantityBox');
+    const resBusinessType = document.getElementById('resBusinessType');
+    const cargoPhotosCard = document.getElementById('cargoPhotosCard');
+    const resPhotosCount = document.getElementById('resPhotosCount');
+    const photosGallery = document.getElementById('photosGallery');
+
+    // Photo Modal Lightbox elements
+    const photoModal = document.getElementById('photoModal');
+    const photoModalImg = document.getElementById('photoModalImg');
+    const photoModalCounter = document.getElementById('photoModalCounter');
+    const photoModalCloseBtn = document.getElementById('photoModalCloseBtn');
+    const photoPrevBtn = document.getElementById('photoPrevBtn');
+    const photoNextBtn = document.getElementById('photoNextBtn');
+    const photoModalStage = document.getElementById('photoModalStage');
+
+    let currentPackagedPhotos = [];
+    let currentPhotoIdx = 0;
+
     // Cargo Map elements
     const cargoDistanceSection = document.getElementById('cargoDistanceSection');
     const mapRemainingKm = document.getElementById('mapRemainingKm');
@@ -2385,6 +2782,71 @@
 
           timelineList.appendChild(itemEl);
         });
+      }
+
+      // Populate Cargo Specifications (Weight, Volume, Box count)
+      const hasWeight = item.totalWeight != null && item.totalWeight !== '';
+      const hasVolume = item.totalVolume != null && item.totalVolume !== '';
+      const hasBox = item.quantityBox != null && item.quantityBox !== '';
+
+      if (cargoSpecsCard) {
+        if (hasWeight || hasVolume || hasBox) {
+          cargoSpecsCard.style.display = 'block';
+          if (resWeight) {
+            const numW = parseFloat(item.totalWeight);
+            resWeight.textContent = !isNaN(numW) ? numW.toLocaleString('ru-RU') : (item.totalWeight || '—');
+          }
+          if (resVolume) {
+            const numV = parseFloat(item.totalVolume);
+            resVolume.textContent = !isNaN(numV) ? numV.toLocaleString('ru-RU') : (item.totalVolume || '—');
+          }
+          if (resQuantityBox) {
+            resQuantityBox.textContent = item.quantityBox || '—';
+          }
+          if (resBusinessType) {
+            resBusinessType.textContent = item.businessType || 'Упакован';
+          }
+        } else {
+          cargoSpecsCard.style.display = 'none';
+        }
+      }
+
+      // Populate Cargo Photos after packaging
+      const packagedPhotos = Array.isArray(item.packagedFiles) ? item.packagedFiles.filter(Boolean) : [];
+      if (cargoPhotosCard) {
+        if (packagedPhotos.length > 0) {
+          cargoPhotosCard.style.display = 'block';
+          if (resPhotosCount) {
+            resPhotosCount.textContent = `${packagedPhotos.length} ${getNoun(packagedPhotos.length, 'фото', 'фото', 'фото')}`;
+          }
+          if (photosGallery) {
+            photosGallery.innerHTML = '';
+            currentPackagedPhotos = packagedPhotos;
+            packagedPhotos.forEach((photoUrl, idx) => {
+              const thumb = document.createElement('div');
+              thumb.className = 'photo-thumb';
+              // Use image proxy for smooth inline viewing
+              const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(photoUrl)}`;
+              thumb.innerHTML = `
+                <img src="${proxyUrl}" alt="Фото груза ${idx + 1}" loading="lazy" />
+                <div class="photo-zoom-icon">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 3 21 3 21 9"></polyline>
+                    <polyline points="9 21 3 21 3 15"></polyline>
+                    <line x1="21" y1="3" x2="14" y2="10"></line>
+                    <line x1="3" y1="21" x2="10" y2="14"></line>
+                  </svg>
+                </div>
+              `;
+              thumb.addEventListener('click', () => {
+                openPhotoModal(idx);
+              });
+              photosGallery.appendChild(thumb);
+            });
+          }
+        } else {
+          cargoPhotosCard.style.display = 'none';
+        }
       }
 
       currentTrackingOrder = item;
@@ -2686,6 +3148,118 @@
       if (e.target === botModal) {
         botModal.classList.remove('show');
       }
+    });
+
+    // --- Photo Modal Lightbox Controller ---
+    function openPhotoModal(idx) {
+      if (!currentPackagedPhotos || currentPackagedPhotos.length === 0) return;
+      currentPhotoIdx = Math.max(0, Math.min(idx, currentPackagedPhotos.length - 1));
+      updatePhotoModalView();
+      if (photoModal) {
+        photoModal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+      }
+      triggerHaptic('medium');
+    }
+
+    function closePhotoModal() {
+      if (photoModal) {
+        photoModal.classList.remove('show');
+        document.body.style.overflow = '';
+      }
+      triggerHaptic('light');
+    }
+
+    function updatePhotoModalView() {
+      if (!photoModalImg || !currentPackagedPhotos[currentPhotoIdx]) return;
+      const rawUrl = currentPackagedPhotos[currentPhotoIdx];
+      const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
+      photoModalImg.src = proxyUrl;
+
+      if (photoModalCounter) {
+        photoModalCounter.textContent = `${currentPhotoIdx + 1} / ${currentPackagedPhotos.length}`;
+      }
+
+      if (currentPackagedPhotos.length <= 1) {
+        if (photoPrevBtn) photoPrevBtn.style.display = 'none';
+        if (photoNextBtn) photoNextBtn.style.display = 'none';
+      } else {
+        if (photoPrevBtn) photoPrevBtn.style.display = 'flex';
+        if (photoNextBtn) photoNextBtn.style.display = 'flex';
+      }
+    }
+
+    function showNextPhoto() {
+      if (currentPackagedPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx + 1) % currentPackagedPhotos.length;
+      updatePhotoModalView();
+      triggerHaptic('light');
+    }
+
+    function showPrevPhoto() {
+      if (currentPackagedPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx - 1 + currentPackagedPhotos.length) % currentPackagedPhotos.length;
+      updatePhotoModalView();
+      triggerHaptic('light');
+    }
+
+    if (photoModalCloseBtn) {
+      photoModalCloseBtn.addEventListener('click', closePhotoModal);
+    }
+
+    if (photoPrevBtn) {
+      photoPrevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showPrevPhoto();
+      });
+    }
+
+    if (photoNextBtn) {
+      photoNextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showNextPhoto();
+      });
+    }
+
+    if (photoModal) {
+      photoModal.addEventListener('click', (e) => {
+        if (e.target === photoModal || e.target === photoModalStage) {
+          closePhotoModal();
+        }
+      });
+    }
+
+    // Swipe gesture support for photo modal
+    let touchStartX = 0;
+    let touchStartY = 0;
+    if (photoModalStage) {
+      photoModalStage.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].clientX;
+        touchStartY = e.changedTouches[0].clientY;
+      }, { passive: true });
+
+      photoModalStage.addEventListener('touchend', (e) => {
+        const diffX = e.changedTouches[0].clientX - touchStartX;
+        const diffY = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY)) {
+          if (diffX < 0) {
+            showNextPhoto();
+          } else {
+            showPrevPhoto();
+          }
+        } else if (diffY > 80 && Math.abs(diffY) > Math.abs(diffX)) {
+          // Swipe down to close
+          closePhotoModal();
+        }
+      }, { passive: true });
+    }
+
+    // Keyboard navigation (Esc, Left, Right)
+    document.addEventListener('keydown', (e) => {
+      if (!photoModal || !photoModal.classList.contains('show')) return;
+      if (e.key === 'Escape') closePhotoModal();
+      if (e.key === 'ArrowRight') showNextPhoto();
+      if (e.key === 'ArrowLeft') showPrevPhoto();
     });
 
     subscribeBtn.addEventListener('click', () => {
