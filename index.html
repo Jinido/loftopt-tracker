@@ -967,6 +967,59 @@
       color: #34d399;
     }
 
+    .photos-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .photo-tab {
+      flex: 1;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-xs);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .photo-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .photo-tab.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    .photo-tab-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+
+    .photo-tab.active .photo-tab-badge {
+      background: var(--accent-light);
+      color: #60a5fa;
+    }
+
     .photos-gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
@@ -2180,17 +2233,29 @@
         </div>
       </section>
 
-      <!-- Cargo Photos Card (Photos after packaging) -->
+      <!-- Cargo Photos Card (Inspection & Packaging) -->
       <section class="photos-card" id="cargoPhotosCard">
         <div class="photos-header">
           <div class="photos-title-group">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #34d399;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;">
               <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            <h3>Фото груза после упаковки</h3>
+            <h3>Фотографии груза</h3>
           </div>
           <span class="photos-counter" id="resPhotosCount">0 фото</span>
+        </div>
+
+        <!-- Segmented Tabs for Inspection vs Packaging -->
+        <div class="photos-tabs" id="photosTabs">
+          <button type="button" class="photo-tab active" id="tabInspectionBtn">
+            Проверка
+            <span class="photo-tab-badge" id="inspectionBadge">0</span>
+          </button>
+          <button type="button" class="photo-tab" id="tabPackagingBtn">
+            Упаковка
+            <span class="photo-tab-badge" id="packagingBadge">0</span>
+          </button>
         </div>
 
         <div class="photos-gallery" id="photosGallery">
@@ -2577,6 +2642,11 @@
     const cargoPhotosCard = document.getElementById('cargoPhotosCard');
     const resPhotosCount = document.getElementById('resPhotosCount');
     const photosGallery = document.getElementById('photosGallery');
+    const photosTabs = document.getElementById('photosTabs');
+    const tabInspectionBtn = document.getElementById('tabInspectionBtn');
+    const tabPackagingBtn = document.getElementById('tabPackagingBtn');
+    const inspectionBadge = document.getElementById('inspectionBadge');
+    const packagingBadge = document.getElementById('packagingBadge');
 
     // Photo Modal Lightbox elements
     const photoModal = document.getElementById('photoModal');
@@ -2587,7 +2657,11 @@
     const photoNextBtn = document.getElementById('photoNextBtn');
     const photoModalStage = document.getElementById('photoModalStage');
 
+    let currentInspectionPhotos = [];
     let currentPackagedPhotos = [];
+    let currentModalPhotos = [];
+    let currentModalCategory = '';
+    let activePhotoTab = 'inspection';
     let currentPhotoIdx = 0;
 
     // Cargo Map elements
@@ -2811,38 +2885,33 @@
         }
       }
 
-      // Populate Cargo Photos after packaging
-      const packagedPhotos = Array.isArray(item.packagedFiles) ? item.packagedFiles.filter(Boolean) : [];
+      // Populate Cargo Photos (Inspection & Packaging)
+      currentInspectionPhotos = Array.isArray(item.goodsFiles) ? item.goodsFiles.filter(Boolean) : [];
+      currentPackagedPhotos = Array.isArray(item.packagedFiles) ? item.packagedFiles.filter(Boolean) : [];
+      const totalPhotos = currentInspectionPhotos.length + currentPackagedPhotos.length;
+
       if (cargoPhotosCard) {
-        if (packagedPhotos.length > 0) {
+        if (totalPhotos > 0) {
           cargoPhotosCard.style.display = 'block';
           if (resPhotosCount) {
-            resPhotosCount.textContent = `${packagedPhotos.length} ${getNoun(packagedPhotos.length, 'фото', 'фото', 'фото')}`;
+            resPhotosCount.textContent = `${totalPhotos} ${getNoun(totalPhotos, 'фото', 'фото', 'фото')}`;
           }
-          if (photosGallery) {
-            photosGallery.innerHTML = '';
-            currentPackagedPhotos = packagedPhotos;
-            packagedPhotos.forEach((photoUrl, idx) => {
-              const thumb = document.createElement('div');
-              thumb.className = 'photo-thumb';
-              // Use image proxy for smooth inline viewing
-              const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(photoUrl)}`;
-              thumb.innerHTML = `
-                <img src="${proxyUrl}" alt="Фото груза ${idx + 1}" loading="lazy" />
-                <div class="photo-zoom-icon">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="15 3 21 3 21 9"></polyline>
-                    <polyline points="9 21 3 21 3 15"></polyline>
-                    <line x1="21" y1="3" x2="14" y2="10"></line>
-                    <line x1="3" y1="21" x2="10" y2="14"></line>
-                  </svg>
-                </div>
-              `;
-              thumb.addEventListener('click', () => {
-                openPhotoModal(idx);
-              });
-              photosGallery.appendChild(thumb);
-            });
+
+          if (inspectionBadge) inspectionBadge.textContent = currentInspectionPhotos.length;
+          if (packagingBadge) packagingBadge.textContent = currentPackagedPhotos.length;
+
+          if (currentInspectionPhotos.length > 0 && currentPackagedPhotos.length > 0) {
+            if (photosTabs) photosTabs.style.display = 'flex';
+            if (tabInspectionBtn) tabInspectionBtn.style.display = 'flex';
+            if (tabPackagingBtn) tabPackagingBtn.style.display = 'flex';
+            setPhotoTab(activePhotoTab || 'inspection');
+          } else {
+            if (photosTabs) photosTabs.style.display = 'none';
+            if (currentInspectionPhotos.length > 0) {
+              setPhotoTab('inspection');
+            } else {
+              setPhotoTab('packaging');
+            }
           }
         } else {
           cargoPhotosCard.style.display = 'none';
@@ -3150,10 +3219,74 @@
       }
     });
 
-    // --- Photo Modal Lightbox Controller ---
-    function openPhotoModal(idx) {
-      if (!currentPackagedPhotos || currentPackagedPhotos.length === 0) return;
-      currentPhotoIdx = Math.max(0, Math.min(idx, currentPackagedPhotos.length - 1));
+    // --- Photo Gallery & Lightbox Controller ---
+    function setPhotoTab(tab) {
+      activePhotoTab = tab;
+      const isInspection = tab === 'inspection';
+
+      if (tabInspectionBtn) tabInspectionBtn.classList.toggle('active', isInspection);
+      if (tabPackagingBtn) tabPackagingBtn.classList.toggle('active', !isInspection);
+
+      const targetList = isInspection ? currentInspectionPhotos : currentPackagedPhotos;
+      const targetLabel = isInspection ? 'Проверка' : 'Упаковка';
+      renderPhotosGallery(targetList, targetLabel);
+    }
+
+    function renderPhotosGallery(photosList, categoryTitle) {
+      if (!photosGallery) return;
+      photosGallery.innerHTML = '';
+
+      if (!photosList || photosList.length === 0) {
+        photosGallery.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
+            Фотографии в этой категории отсутствуют
+          </div>
+        `;
+        return;
+      }
+
+      photosList.forEach((photoUrl, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'photo-thumb';
+        const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(photoUrl)}`;
+        thumb.innerHTML = `
+          <img src="${proxyUrl}" alt="${categoryTitle} ${idx + 1}" loading="lazy" />
+          <div class="photo-zoom-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <polyline points="9 21 3 21 3 15"></polyline>
+              <line x1="21" y1="3" x2="14" y2="10"></line>
+              <line x1="3" y1="21" x2="10" y2="14"></line>
+            </svg>
+          </div>
+        `;
+        thumb.addEventListener('click', () => {
+          openPhotoModal(idx, photosList, categoryTitle);
+        });
+        photosGallery.appendChild(thumb);
+      });
+    }
+
+    if (tabInspectionBtn) {
+      tabInspectionBtn.addEventListener('click', () => {
+        setPhotoTab('inspection');
+        triggerHaptic('light');
+      });
+    }
+
+    if (tabPackagingBtn) {
+      tabPackagingBtn.addEventListener('click', () => {
+        setPhotoTab('packaging');
+        triggerHaptic('light');
+      });
+    }
+
+    function openPhotoModal(idx, photosList, categoryTitle = '') {
+      currentModalPhotos = photosList || (activePhotoTab === 'inspection' ? currentInspectionPhotos : currentPackagedPhotos);
+      currentModalCategory = categoryTitle || (activePhotoTab === 'inspection' ? 'Проверка' : 'Упаковка');
+      if (!currentModalPhotos || currentModalPhotos.length === 0) return;
+
+      currentPhotoIdx = Math.max(0, Math.min(idx, currentModalPhotos.length - 1));
       updatePhotoModalView();
       if (photoModal) {
         photoModal.classList.add('show');
@@ -3171,16 +3304,17 @@
     }
 
     function updatePhotoModalView() {
-      if (!photoModalImg || !currentPackagedPhotos[currentPhotoIdx]) return;
-      const rawUrl = currentPackagedPhotos[currentPhotoIdx];
+      if (!photoModalImg || !currentModalPhotos[currentPhotoIdx]) return;
+      const rawUrl = currentModalPhotos[currentPhotoIdx];
       const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
       photoModalImg.src = proxyUrl;
 
       if (photoModalCounter) {
-        photoModalCounter.textContent = `${currentPhotoIdx + 1} / ${currentPackagedPhotos.length}`;
+        const catLabel = currentModalCategory ? ` · ${currentModalCategory}` : '';
+        photoModalCounter.textContent = `${currentPhotoIdx + 1} / ${currentModalPhotos.length}${catLabel}`;
       }
 
-      if (currentPackagedPhotos.length <= 1) {
+      if (currentModalPhotos.length <= 1) {
         if (photoPrevBtn) photoPrevBtn.style.display = 'none';
         if (photoNextBtn) photoNextBtn.style.display = 'none';
       } else {
@@ -3190,15 +3324,15 @@
     }
 
     function showNextPhoto() {
-      if (currentPackagedPhotos.length <= 1) return;
-      currentPhotoIdx = (currentPhotoIdx + 1) % currentPackagedPhotos.length;
+      if (!currentModalPhotos || currentModalPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx + 1) % currentModalPhotos.length;
       updatePhotoModalView();
       triggerHaptic('light');
     }
 
     function showPrevPhoto() {
-      if (currentPackagedPhotos.length <= 1) return;
-      currentPhotoIdx = (currentPhotoIdx - 1 + currentPackagedPhotos.length) % currentPackagedPhotos.length;
+      if (!currentModalPhotos || currentModalPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx - 1 + currentModalPhotos.length) % currentModalPhotos.length;
       updatePhotoModalView();
       triggerHaptic('light');
     }
