@@ -24,7 +24,7 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function calculateRouteMetrics(lastLat, lastLng, trackList = [], originName = "Иу", destName = "Москва (Рябинск)") {
+function calculateRouteMetrics(lastLat, lastLng, trackList = [], originName = "Иу", destName = "Москва (Рябинск)", currentStatus = "") {
   // If coordinates are missing, fallback to sensible estimates
   let curLat = lastLat ? Number(lastLat) : null;
   let curLng = lastLng ? Number(lastLng) : null;
@@ -50,14 +50,35 @@ function calculateRouteMetrics(lastLat, lastLng, trackList = [], originName = "�
     );
   }
 
-  // If no GPS coordinates at all, return default metrics
+  // If no GPS coordinates at all, calculate fallback metrics based on status / stages
   if (!curLat || !curLng) {
+    let estProgress = 0;
+    const allContext = trackList.map(t => (t.context || '') + ' ' + (t.trackStatus || '')).join(' ').toLowerCase();
+
+    if (/выдан|доставлен|получен/i.test(allContext) || /выдан/i.test(currentStatus)) {
+      estProgress = 100;
+    } else if (/прибыл|москва|рябинск|склад рф|южные ворота/i.test(allContext)) {
+      estProgress = 92;
+    } else if (/казахстан|алматы|шымкент/i.test(allContext)) {
+      estProgress = 65;
+    } else if (/хоргос|таможн|границ/i.test(allContext)) {
+      estProgress = 48;
+    } else if (/отправлен|в пути|транзит/i.test(allContext)) {
+      estProgress = 25;
+    } else if (trackList.length > 0) {
+      estProgress = 10;
+    }
+
+    const roundedTotal = Math.round(totalRouteKm);
+    const coveredKm = Math.round(roundedTotal * (estProgress / 100));
+    const remainingKm = Math.max(0, roundedTotal - coveredKm);
+
     return {
       hasGps: false,
-      coveredKm: 0,
-      remainingKm: Math.round(totalRouteKm),
-      totalKm: Math.round(totalRouteKm),
-      progressPercent: 0,
+      coveredKm,
+      remainingKm,
+      totalKm: roundedTotal,
+      progressPercent: estProgress,
       routePolyline: ROUTE_WAYPOINTS,
       origin: { name: originName, lat: 29.40965, lng: 120.13144 },
       destination: { name: destName, lat: 55.6984, lng: 37.4265 },

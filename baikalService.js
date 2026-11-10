@@ -51,7 +51,8 @@ function normalizeOrder(rawItem) {
     rawItem.lastLng,
     details,
     origin,
-    targetMarket
+    targetMarket,
+    currentStatus
   );
 
   return {

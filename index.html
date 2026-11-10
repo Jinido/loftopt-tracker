@@ -1496,7 +1496,7 @@
 
     .route-progress-bar-bg.compact {
       width: 100%;
-      height: 5px;
+      height: 6px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: var(--radius-full);
       overflow: hidden;
@@ -1505,6 +1505,21 @@
 
     body.light-theme .route-progress-bar-bg.compact {
       background: rgba(0, 0, 0, 0.08);
+    }
+
+    .route-progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-gradient, linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%));
+      border-radius: var(--radius-full);
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.45);
+      position: relative;
+    }
+
+    body.light-theme .route-progress-bar-fill {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 0 8px rgba(37, 99, 235, 0.35);
     }
 
     .dist-sub-row {
@@ -3309,16 +3324,40 @@
 
     function initOrUpdateCargoMap(item) {
       const dist = item.distance || {};
-      const remaining = dist.remainingKm || 0;
-      const covered = dist.coveredKm || 0;
-      const total = dist.totalKm || (remaining + covered) || 9200;
-      const progress = dist.progressPercent || Math.round((covered / (total || 1)) * 100) || 0;
+      const total = dist.totalKm || 9200;
+      let remaining = typeof dist.remainingKm === 'number' ? dist.remainingKm : null;
+      let covered = typeof dist.coveredKm === 'number' ? dist.coveredKm : null;
+      let progress = typeof dist.progressPercent === 'number' ? dist.progressPercent : null;
+
+      const latestStatus = (item.status || item.trackStatus || '').toLowerCase();
+      const isDelivered = latestStatus.includes('выдан') || latestStatus.includes('доставлен') || latestStatus.includes('получен');
+
+      if (isDelivered) {
+        progress = 100;
+        remaining = 0;
+        covered = total;
+      } else if (progress === null) {
+        if (covered !== null && total > 0) {
+          progress = Math.round((covered / total) * 100);
+        } else {
+          progress = 0;
+        }
+      }
+
+      progress = Math.max(0, Math.min(100, progress));
+      if (remaining === null) remaining = Math.max(0, total - (covered || 0));
+      if (covered === null) covered = Math.round(total * (progress / 100));
 
       if (cargoDistanceSection) {
         cargoDistanceSection.style.display = 'block';
         if (mapRemainingKm) mapRemainingKm.textContent = `~${remaining.toLocaleString('ru-RU')} км`;
         if (mapProgressPercent) mapProgressPercent.textContent = `${progress}%`;
-        if (mapProgressBarFill) mapProgressBarFill.style.width = `${progress}%`;
+        if (mapProgressBarFill) {
+          mapProgressBarFill.style.width = '0%';
+          setTimeout(() => {
+            mapProgressBarFill.style.width = `${progress}%`;
+          }, 40);
+        }
         if (mapCoveredLabel) mapCoveredLabel.textContent = `Пройдено: ~${covered.toLocaleString('ru-RU')} км`;
       }
 
