@@ -943,57 +943,98 @@
       letter-spacing: 0.5px;
     }
 
-    /* Photo Lightbox Modal */
+    /* Photo Fullscreen Modal / Drawer (matches Map Modal) */
     .photo-modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.94);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      z-index: 3000;
-      display: none;
+      background: rgba(8, 10, 15, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex;
       flex-direction: column;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      visibility: hidden;
+      transition: opacity 0.28s ease, visibility 0.28s ease;
     }
 
-    .photo-modal-overlay.show {
-      display: flex;
+    .photo-modal-overlay.active {
       opacity: 1;
+      visibility: visible;
     }
 
-    .photo-modal-top {
-      padding: 16px 20px;
+    .photo-modal-container {
+      position: absolute;
+      inset: 0;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: #fff;
-      z-index: 10;
+      flex-direction: column;
+      background: var(--bg-color);
+      overflow: hidden;
+      transform: translateY(100%);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .photo-modal-counter {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      color: rgba(255, 255, 255, 0.85);
+    .photo-modal-overlay.active .photo-modal-container {
+      transform: translateY(0);
     }
 
-    .photo-modal-close {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.12);
-      border: none;
-      color: #fff;
+    .photo-modal-header {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: background 0.2s ease;
+      text-align: center;
+      padding: calc(var(--safe-top) + 12px) 16px 12px 16px;
+      background: rgba(15, 18, 24, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      z-index: 20;
+      flex-shrink: 0;
+      gap: 3px;
     }
 
-    .photo-modal-close:hover {
-      background: rgba(255, 255, 255, 0.25);
+    body.light-theme .photo-modal-header {
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .photo-brand-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--text-primary);
+      line-height: 1.2;
+      text-align: center;
+    }
+
+    .photo-brand-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .photo-modal-counter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #c084fc;
+      background: rgba(168, 85, 247, 0.12);
+      border: 1px solid rgba(168, 85, 247, 0.28);
+      padding: 2px 10px;
+      border-radius: var(--radius-full);
+      letter-spacing: 0.3px;
+    }
+
+    body.light-theme .photo-modal-counter-chip {
+      color: #7c3aed;
+      background: rgba(124, 58, 237, 0.08);
+      border-color: rgba(124, 58, 237, 0.22);
     }
 
     .photo-modal-stage {
@@ -1002,17 +1043,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 10px;
+      padding: 16px;
       overflow: hidden;
       user-select: none;
+      background: #090b10;
+    }
+
+    body.light-theme .photo-modal-stage {
+      background: #f1f5f9;
     }
 
     .photo-modal-img {
       max-width: 100%;
-      max-height: 82vh;
+      max-height: 100%;
       object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
@@ -1025,6 +1071,7 @@
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.15);
       backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border: 1px solid rgba(255, 255, 255, 0.18);
       color: #fff;
       display: flex;
@@ -1033,6 +1080,12 @@
       cursor: pointer;
       z-index: 15;
       transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    body.light-theme .photo-nav-btn {
+      background: rgba(0, 0, 0, 0.5);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
     }
 
     .photo-nav-btn:hover {
@@ -2133,29 +2186,30 @@
     </div>
   </div>
 
-  <!-- Photo Lightbox Modal -->
+  <!-- Photo Fullscreen Modal / Drawer (matches Map Modal) -->
   <div id="photoModal" class="photo-modal-overlay">
-    <div class="photo-modal-top">
-      <span class="photo-modal-counter" id="photoModalCounter">1 / 1</span>
-      <button type="button" class="photo-modal-close" id="photoModalCloseBtn" aria-label="Закрыть">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-    </div>
-    <div class="photo-modal-stage" id="photoModalStage">
-      <button type="button" class="photo-nav-btn prev" id="photoPrevBtn" aria-label="Предыдущее фото">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <img id="photoModalImg" class="photo-modal-img" src="" alt="Фотография груза" />
-      <button type="button" class="photo-nav-btn next" id="photoNextBtn" aria-label="Следующее фото">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
+    <div class="photo-modal-container">
+      <!-- Header: LOFT OPT Branding + "Фото отправленного груза" -->
+      <div class="photo-modal-header">
+        <div class="photo-brand-title">LOFT OPT</div>
+        <div class="photo-brand-subtitle">Фото отправленного груза</div>
+        <div class="photo-modal-counter-chip" id="photoModalCounter">1 / 1</div>
+      </div>
+
+      <!-- Photo Display Stage -->
+      <div class="photo-modal-stage" id="photoModalStage">
+        <button type="button" class="photo-nav-btn prev" id="photoPrevBtn" aria-label="Предыдущее фото">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <img id="photoModalImg" class="photo-modal-img" src="" alt="Фотография груза" />
+        <button type="button" class="photo-nav-btn next" id="photoNextBtn" aria-label="Следующее фото">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2478,7 +2532,6 @@
     const photoModal = document.getElementById('photoModal');
     const photoModalImg = document.getElementById('photoModalImg');
     const photoModalCounter = document.getElementById('photoModalCounter');
-    const photoModalCloseBtn = document.getElementById('photoModalCloseBtn');
     const photoPrevBtn = document.getElementById('photoPrevBtn');
     const photoNextBtn = document.getElementById('photoNextBtn');
     const photoModalStage = document.getElementById('photoModalStage');
@@ -3031,18 +3084,26 @@
       currentPhotoIdx = Math.max(0, Math.min(idx, currentPackagedPhotos.length - 1));
       updatePhotoModalView();
       if (photoModal) {
-        photoModal.classList.add('show');
+        photoModal.classList.add('active');
         document.body.style.overflow = 'hidden';
       }
       triggerHaptic('medium');
+
+      if (tg?.BackButton) {
+        tg.BackButton.show();
+      }
     }
 
     function closePhotoModal() {
       if (photoModal) {
-        photoModal.classList.remove('show');
+        photoModal.classList.remove('active');
         document.body.style.overflow = '';
       }
       triggerHaptic('light');
+
+      if (tg?.BackButton) {
+        tg.BackButton.hide();
+      }
     }
 
     function updatePhotoModalView() {
@@ -3076,10 +3137,6 @@
       currentPhotoIdx = (currentPhotoIdx - 1 + currentPackagedPhotos.length) % currentPackagedPhotos.length;
       updatePhotoModalView();
       triggerHaptic('light');
-    }
-
-    if (photoModalCloseBtn) {
-      photoModalCloseBtn.addEventListener('click', closePhotoModal);
     }
 
     if (photoPrevBtn) {
@@ -3131,7 +3188,7 @@
 
     // Keyboard navigation (Esc, Left, Right)
     document.addEventListener('keydown', (e) => {
-      if (!photoModal || !photoModal.classList.contains('show')) return;
+      if (!photoModal || !photoModal.classList.contains('active')) return;
       if (e.key === 'Escape') closePhotoModal();
       if (e.key === 'ArrowRight') showNextPhoto();
       if (e.key === 'ArrowLeft') showPrevPhoto();
@@ -3404,14 +3461,20 @@
     }
     if (tg?.BackButton) {
       tg.BackButton.onClick(() => {
-        if (mapModal && mapModal.classList.contains('active')) {
+        if (photoModal && photoModal.classList.contains('active')) {
+          closePhotoModal();
+        } else if (mapModal && mapModal.classList.contains('active')) {
           closeMapModal();
         }
       });
     }
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && mapModal && mapModal.classList.contains('active')) {
-        closeMapModal();
+      if (e.key === 'Escape') {
+        if (photoModal && photoModal.classList.contains('active')) {
+          closePhotoModal();
+        } else if (mapModal && mapModal.classList.contains('active')) {
+          closeMapModal();
+        }
       }
     });
 
