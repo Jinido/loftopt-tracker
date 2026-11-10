@@ -752,6 +752,10 @@
       width: 100%;
     }
 
+    .card-actions-grid.has-photos .btn-sub-action {
+      grid-column: 1 / -1;
+    }
+
     .btn-card-action {
       display: flex;
       align-items: center;
@@ -801,6 +805,33 @@
       box-shadow: 0 4px 14px var(--accent-glow);
     }
 
+    /* Photo Button: Media violet style */
+    .btn-photo-action {
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.32);
+      color: #c084fc;
+    }
+
+    body.light-theme .btn-photo-action {
+      background: rgba(124, 58, 237, 0.08);
+      border-color: rgba(124, 58, 237, 0.22);
+      color: #7c3aed;
+    }
+
+    .btn-photo-action:hover {
+      background: #8b5cf6;
+      border-color: #8b5cf6;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+    }
+
+    .photo-btn-count {
+      font-size: 11.5px;
+      opacity: 0.85;
+      font-weight: 500;
+      margin-left: 2px;
+    }
+
     /* Subscribe Notification Button: Clean Green accent style */
     .btn-sub-action {
       background: rgba(16, 185, 129, 0.15);
@@ -842,239 +873,74 @@
       transform: none;
     }
 
-    /* Cargo Specs Card (Weight, Volume, Box count) */
-    .specs-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      margin-top: 14px;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+    /* Cargo Specifications inside Summary Card */
+    .cargo-specs-section {
+      margin-bottom: 0;
       display: none;
-    }
-
-    .specs-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .specs-title-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .specs-title-group h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin: 0;
-    }
-
-    .specs-badge {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      background: var(--accent-light);
-      color: #60a5fa;
     }
 
     .specs-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 8px;
     }
 
     .spec-item {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-md);
-      padding: 12px 8px;
+      padding: 10px 6px;
       text-align: center;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 3px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: all 0.2s ease;
+    }
+
+    .spec-item:hover {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    body.light-theme .spec-item:hover {
+      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .spec-val-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 3px;
+      max-width: 100%;
     }
 
     .spec-val {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--text-primary);
-      line-height: 1.15;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .spec-unit {
       font-size: 11px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--text-secondary);
-      margin-left: 2px;
+      flex-shrink: 0;
     }
 
     .spec-lbl {
-      font-size: 11px;
-      font-weight: 500;
+      font-size: 10px;
+      font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    /* Cargo Photos Card */
-    .photos-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      margin-top: 14px;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
-      display: none;
-    }
-
-    .photos-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .photos-title-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .photos-title-group h3 {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin: 0;
-    }
-
-    .photos-counter {
-      font-size: 11px;
-      font-weight: 600;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      background: rgba(16, 185, 129, 0.15);
-      color: #34d399;
-    }
-
-    .photos-tabs {
-      display: flex;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.04);
-      padding: 4px;
-      border-radius: var(--radius-sm);
-      margin-bottom: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .photo-tab {
-      flex: 1;
-      padding: 8px 10px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: var(--radius-xs);
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .photo-tab:hover {
-      color: var(--text-primary);
-    }
-
-    .photo-tab.active {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
-      border-color: rgba(255, 255, 255, 0.12);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    }
-
-    .photo-tab-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 1px 6px;
-      border-radius: var(--radius-full);
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-    }
-
-    .photo-tab.active .photo-tab-badge {
-      background: var(--accent-light);
-      color: #60a5fa;
-    }
-
-    .photos-gallery {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-      gap: 10px;
-    }
-
-    .photo-thumb {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(0, 0, 0, 0.3);
-      cursor: pointer;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .photo-thumb:hover {
-      transform: translateY(-2px) scale(1.02);
-      border-color: #3b82f6;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-    }
-
-    .photo-thumb:active {
-      transform: scale(0.97);
-    }
-
-    .photo-thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: opacity 0.2s ease;
-    }
-
-    .photo-thumb .photo-zoom-icon {
-      position: absolute;
-      right: 5px;
-      bottom: 5px;
-      width: 22px;
-      height: 22px;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      opacity: 0.85;
-      transition: opacity 0.2s ease;
-    }
-
-    .photo-thumb:hover .photo-zoom-icon {
-      opacity: 1;
-      background: #2563eb;
+      letter-spacing: 0.5px;
     }
 
     /* Photo Lightbox Modal */
@@ -2145,6 +2011,38 @@
           </div>
         </div>
 
+        <!-- Cargo Specifications (Weight, Volume, Box Count) -->
+        <div class="cargo-specs-section" id="cargoSpecsCard">
+          <div class="specs-grid">
+            <!-- Weight -->
+            <div class="spec-item">
+              <div class="spec-val-wrap">
+                <span class="spec-val" id="resWeight">—</span>
+                <span class="spec-unit">кг</span>
+              </div>
+              <span class="spec-lbl">Вес</span>
+            </div>
+
+            <!-- Volume -->
+            <div class="spec-item">
+              <div class="spec-val-wrap">
+                <span class="spec-val" id="resVolume">—</span>
+                <span class="spec-unit">м³</span>
+              </div>
+              <span class="spec-lbl">Объём</span>
+            </div>
+
+            <!-- Quantity / Box Count -->
+            <div class="spec-item">
+              <div class="spec-val-wrap">
+                <span class="spec-val" id="resQuantityBox">—</span>
+                <span class="spec-unit">мест</span>
+              </div>
+              <span class="spec-lbl">Мест</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Compact Distance & Route Progress Section -->
         <div class="card-distance-section" id="cargoDistanceSection">
           <div class="dist-compact-header">
@@ -2166,8 +2064,8 @@
             <span id="mapCoveredLabel">Пройдено: — км</span>
           </div>
 
-          <!-- Compact Action Buttons: Map & Notifications -->
-          <div class="card-actions-grid">
+          <!-- Compact Action Buttons: Map & Photos & Notifications -->
+          <div class="card-actions-grid" id="cardActionsGrid">
             <button type="button" id="openMapBtn" class="btn-card-action btn-map-action">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
@@ -2175,6 +2073,14 @@
                 <line x1="16" y1="6" x2="16" y2="22"></line>
               </svg>
               <span>Карта маршрута</span>
+            </button>
+            <button type="button" id="openPhotosBtn" class="btn-card-action btn-photo-action" style="display: none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Фото груза</span>
+              <span id="openPhotosBtnCount" class="photo-btn-count"></span>
             </button>
             <button type="button" id="subscribeBtn" class="btn-card-action btn-sub-action">
               <span id="subscribeBtnIcon" class="btn-action-icon">
@@ -2186,80 +2092,6 @@
               <span id="subscribeBtnText">Отслеживать</span>
             </button>
           </div>
-        </div>
-      </section>
-
-      <!-- Cargo Specifications Card (Weight, Volume, Box Count) -->
-      <section class="specs-card" id="cargoSpecsCard">
-        <div class="specs-header">
-          <div class="specs-title-group">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
-            <h3>Параметры груза</h3>
-          </div>
-          <span class="specs-badge" id="resBusinessType">Упакован</span>
-        </div>
-
-        <div class="specs-grid">
-          <!-- Weight -->
-          <div class="spec-item">
-            <div>
-              <span class="spec-val" id="resWeight">—</span>
-              <span class="spec-unit">кг</span>
-            </div>
-            <span class="spec-lbl">Вес</span>
-          </div>
-
-          <!-- Volume -->
-          <div class="spec-item">
-            <div>
-              <span class="spec-val" id="resVolume">—</span>
-              <span class="spec-unit">м³</span>
-            </div>
-            <span class="spec-lbl">Объём</span>
-          </div>
-
-          <!-- Quantity / Box Count -->
-          <div class="spec-item">
-            <div>
-              <span class="spec-val" id="resQuantityBox">—</span>
-              <span class="spec-unit">мест</span>
-            </div>
-            <span class="spec-lbl">Мест</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Cargo Photos Card (Inspection & Packaging) -->
-      <section class="photos-card" id="cargoPhotosCard">
-        <div class="photos-header">
-          <div class="photos-title-group">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="color: #60a5fa;">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-            <h3>Фотографии груза</h3>
-          </div>
-          <span class="photos-counter" id="resPhotosCount">0 фото</span>
-        </div>
-
-        <!-- Segmented Tabs for Inspection vs Packaging -->
-        <div class="photos-tabs" id="photosTabs">
-          <button type="button" class="photo-tab active" id="tabInspectionBtn">
-            Проверка
-            <span class="photo-tab-badge" id="inspectionBadge">0</span>
-          </button>
-          <button type="button" class="photo-tab" id="tabPackagingBtn">
-            Упаковка
-            <span class="photo-tab-badge" id="packagingBadge">0</span>
-          </button>
-        </div>
-
-        <div class="photos-gallery" id="photosGallery">
-          <!-- Dynamically populated thumbnails -->
         </div>
       </section>
 
@@ -2638,15 +2470,9 @@
     const resWeight = document.getElementById('resWeight');
     const resVolume = document.getElementById('resVolume');
     const resQuantityBox = document.getElementById('resQuantityBox');
-    const resBusinessType = document.getElementById('resBusinessType');
-    const cargoPhotosCard = document.getElementById('cargoPhotosCard');
-    const resPhotosCount = document.getElementById('resPhotosCount');
-    const photosGallery = document.getElementById('photosGallery');
-    const photosTabs = document.getElementById('photosTabs');
-    const tabInspectionBtn = document.getElementById('tabInspectionBtn');
-    const tabPackagingBtn = document.getElementById('tabPackagingBtn');
-    const inspectionBadge = document.getElementById('inspectionBadge');
-    const packagingBadge = document.getElementById('packagingBadge');
+    const cardActionsGrid = document.getElementById('cardActionsGrid');
+    const openPhotosBtn = document.getElementById('openPhotosBtn');
+    const openPhotosBtnCount = document.getElementById('openPhotosBtnCount');
 
     // Photo Modal Lightbox elements
     const photoModal = document.getElementById('photoModal');
@@ -2657,11 +2483,7 @@
     const photoNextBtn = document.getElementById('photoNextBtn');
     const photoModalStage = document.getElementById('photoModalStage');
 
-    let currentInspectionPhotos = [];
     let currentPackagedPhotos = [];
-    let currentModalPhotos = [];
-    let currentModalCategory = '';
-    let activePhotoTab = 'inspection';
     let currentPhotoIdx = 0;
 
     // Cargo Map elements
@@ -2877,44 +2699,28 @@
           if (resQuantityBox) {
             resQuantityBox.textContent = item.quantityBox || '—';
           }
-          if (resBusinessType) {
-            resBusinessType.textContent = item.businessType || 'Упакован';
-          }
         } else {
           cargoSpecsCard.style.display = 'none';
         }
       }
 
-      // Populate Cargo Photos (Inspection & Packaging)
-      currentInspectionPhotos = Array.isArray(item.goodsFiles) ? item.goodsFiles.filter(Boolean) : [];
-      currentPackagedPhotos = Array.isArray(item.packagedFiles) ? item.packagedFiles.filter(Boolean) : [];
-      const totalPhotos = currentInspectionPhotos.length + currentPackagedPhotos.length;
+      // Populate Cargo Photos button state
+      const packagedPhotos = Array.isArray(item.packagedFiles) ? item.packagedFiles.filter(Boolean) : [];
+      currentPackagedPhotos = packagedPhotos;
 
-      if (cargoPhotosCard) {
-        if (totalPhotos > 0) {
-          cargoPhotosCard.style.display = 'block';
-          if (resPhotosCount) {
-            resPhotosCount.textContent = `${totalPhotos} ${getNoun(totalPhotos, 'фото', 'фото', 'фото')}`;
-          }
-
-          if (inspectionBadge) inspectionBadge.textContent = currentInspectionPhotos.length;
-          if (packagingBadge) packagingBadge.textContent = currentPackagedPhotos.length;
-
-          if (currentInspectionPhotos.length > 0 && currentPackagedPhotos.length > 0) {
-            if (photosTabs) photosTabs.style.display = 'flex';
-            if (tabInspectionBtn) tabInspectionBtn.style.display = 'flex';
-            if (tabPackagingBtn) tabPackagingBtn.style.display = 'flex';
-            setPhotoTab(activePhotoTab || 'inspection');
-          } else {
-            if (photosTabs) photosTabs.style.display = 'none';
-            if (currentInspectionPhotos.length > 0) {
-              setPhotoTab('inspection');
-            } else {
-              setPhotoTab('packaging');
-            }
+      if (openPhotosBtn) {
+        if (packagedPhotos.length > 0) {
+          openPhotosBtn.style.display = 'inline-flex';
+          if (cardActionsGrid) cardActionsGrid.classList.add('has-photos');
+          if (openPhotosBtnCount) {
+            openPhotosBtnCount.textContent = `(${packagedPhotos.length})`;
           }
         } else {
-          cargoPhotosCard.style.display = 'none';
+          openPhotosBtn.style.display = 'none';
+          if (cardActionsGrid) cardActionsGrid.classList.remove('has-photos');
+          if (openPhotosBtnCount) {
+            openPhotosBtnCount.textContent = '';
+          }
         }
       }
 
@@ -3219,74 +3025,10 @@
       }
     });
 
-    // --- Photo Gallery & Lightbox Controller ---
-    function setPhotoTab(tab) {
-      activePhotoTab = tab;
-      const isInspection = tab === 'inspection';
-
-      if (tabInspectionBtn) tabInspectionBtn.classList.toggle('active', isInspection);
-      if (tabPackagingBtn) tabPackagingBtn.classList.toggle('active', !isInspection);
-
-      const targetList = isInspection ? currentInspectionPhotos : currentPackagedPhotos;
-      const targetLabel = isInspection ? 'Проверка' : 'Упаковка';
-      renderPhotosGallery(targetList, targetLabel);
-    }
-
-    function renderPhotosGallery(photosList, categoryTitle) {
-      if (!photosGallery) return;
-      photosGallery.innerHTML = '';
-
-      if (!photosList || photosList.length === 0) {
-        photosGallery.innerHTML = `
-          <div style="grid-column: 1 / -1; padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">
-            Фотографии в этой категории отсутствуют
-          </div>
-        `;
-        return;
-      }
-
-      photosList.forEach((photoUrl, idx) => {
-        const thumb = document.createElement('div');
-        thumb.className = 'photo-thumb';
-        const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(photoUrl)}`;
-        thumb.innerHTML = `
-          <img src="${proxyUrl}" alt="${categoryTitle} ${idx + 1}" loading="lazy" />
-          <div class="photo-zoom-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <polyline points="9 21 3 21 3 15"></polyline>
-              <line x1="21" y1="3" x2="14" y2="10"></line>
-              <line x1="3" y1="21" x2="10" y2="14"></line>
-            </svg>
-          </div>
-        `;
-        thumb.addEventListener('click', () => {
-          openPhotoModal(idx, photosList, categoryTitle);
-        });
-        photosGallery.appendChild(thumb);
-      });
-    }
-
-    if (tabInspectionBtn) {
-      tabInspectionBtn.addEventListener('click', () => {
-        setPhotoTab('inspection');
-        triggerHaptic('light');
-      });
-    }
-
-    if (tabPackagingBtn) {
-      tabPackagingBtn.addEventListener('click', () => {
-        setPhotoTab('packaging');
-        triggerHaptic('light');
-      });
-    }
-
-    function openPhotoModal(idx, photosList, categoryTitle = '') {
-      currentModalPhotos = photosList || (activePhotoTab === 'inspection' ? currentInspectionPhotos : currentPackagedPhotos);
-      currentModalCategory = categoryTitle || (activePhotoTab === 'inspection' ? 'Проверка' : 'Упаковка');
-      if (!currentModalPhotos || currentModalPhotos.length === 0) return;
-
-      currentPhotoIdx = Math.max(0, Math.min(idx, currentModalPhotos.length - 1));
+    // --- Photo Modal Lightbox Controller ---
+    function openPhotoModal(idx) {
+      if (!currentPackagedPhotos || currentPackagedPhotos.length === 0) return;
+      currentPhotoIdx = Math.max(0, Math.min(idx, currentPackagedPhotos.length - 1));
       updatePhotoModalView();
       if (photoModal) {
         photoModal.classList.add('show');
@@ -3304,17 +3046,16 @@
     }
 
     function updatePhotoModalView() {
-      if (!photoModalImg || !currentModalPhotos[currentPhotoIdx]) return;
-      const rawUrl = currentModalPhotos[currentPhotoIdx];
+      if (!photoModalImg || !currentPackagedPhotos[currentPhotoIdx]) return;
+      const rawUrl = currentPackagedPhotos[currentPhotoIdx];
       const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(rawUrl)}`;
       photoModalImg.src = proxyUrl;
 
       if (photoModalCounter) {
-        const catLabel = currentModalCategory ? ` · ${currentModalCategory}` : '';
-        photoModalCounter.textContent = `${currentPhotoIdx + 1} / ${currentModalPhotos.length}${catLabel}`;
+        photoModalCounter.textContent = `${currentPhotoIdx + 1} / ${currentPackagedPhotos.length}`;
       }
 
-      if (currentModalPhotos.length <= 1) {
+      if (currentPackagedPhotos.length <= 1) {
         if (photoPrevBtn) photoPrevBtn.style.display = 'none';
         if (photoNextBtn) photoNextBtn.style.display = 'none';
       } else {
@@ -3324,15 +3065,15 @@
     }
 
     function showNextPhoto() {
-      if (!currentModalPhotos || currentModalPhotos.length <= 1) return;
-      currentPhotoIdx = (currentPhotoIdx + 1) % currentModalPhotos.length;
+      if (currentPackagedPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx + 1) % currentPackagedPhotos.length;
       updatePhotoModalView();
       triggerHaptic('light');
     }
 
     function showPrevPhoto() {
-      if (!currentModalPhotos || currentModalPhotos.length <= 1) return;
-      currentPhotoIdx = (currentPhotoIdx - 1 + currentModalPhotos.length) % currentModalPhotos.length;
+      if (currentPackagedPhotos.length <= 1) return;
+      currentPhotoIdx = (currentPhotoIdx - 1 + currentPackagedPhotos.length) % currentPackagedPhotos.length;
       updatePhotoModalView();
       triggerHaptic('light');
     }
@@ -3628,6 +3369,11 @@
 
     if (openMapBtn) {
       openMapBtn.addEventListener('click', openMapModal);
+    }
+    if (openPhotosBtn) {
+      openPhotosBtn.addEventListener('click', () => {
+        openPhotoModal(0);
+      });
     }
     if (closeMapBtn) {
       closeMapBtn.addEventListener('click', closeMapModal);
