@@ -1890,6 +1890,109 @@
       color: #ffffff !important;
     }
 
+    /* Modern Leaflet Cargo Popup */
+    .cargo-map-popup {
+      transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    .cargo-map-popup .leaflet-popup-content-wrapper {
+      background: rgba(18, 22, 32, 0.95) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      color: #f3f6fa !important;
+      border-radius: var(--radius-md) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55) !important;
+      padding: 0 !important;
+      animation: popupPopIn 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.light-theme .cargo-map-popup .leaflet-popup-content-wrapper {
+      background: rgba(255, 255, 255, 0.96) !important;
+      color: #0f172a !important;
+      border-color: rgba(0, 0, 0, 0.1) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14) !important;
+    }
+
+    .cargo-map-popup .leaflet-popup-content {
+      margin: 0 !important;
+      min-width: 140px;
+      max-width: 230px;
+      line-height: 1.35 !important;
+    }
+
+    .cargo-map-popup .leaflet-popup-tip-container {
+      margin-top: -1px;
+    }
+
+    .cargo-map-popup .leaflet-popup-tip {
+      background: rgba(18, 22, 32, 0.95) !important;
+    }
+
+    body.light-theme .cargo-map-popup .leaflet-popup-tip {
+      background: rgba(255, 255, 255, 0.96) !important;
+    }
+
+    .cargo-popup-body {
+      padding: 9px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .popup-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .popup-badge.origin {
+      color: #34d399;
+    }
+
+    .popup-badge.truck {
+      color: #60a5fa;
+    }
+
+    .popup-badge.checkpoint {
+      color: #c084fc;
+    }
+
+    .popup-desc {
+      font-size: 12px;
+      font-weight: 500;
+      color: #f1f5f9;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    body.light-theme .popup-desc {
+      color: #1e293b;
+    }
+
+    .popup-time {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    @keyframes popupPopIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
     .leaflet-popup-content-wrapper {
       background: rgba(23, 28, 38, 0.95) !important;
       color: #f3f6fa !important;
@@ -3374,10 +3477,47 @@
         });
       }
 
+      function createPopupContent(type, title, desc, time) {
+        let badgeClass = 'checkpoint';
+        let iconSvg = '';
+
+        if (type === 'origin') {
+          badgeClass = 'origin';
+          iconSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>`;
+        } else if (type === 'truck') {
+          badgeClass = 'truck';
+          iconSvg = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>`;
+        } else {
+          iconSvg = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`;
+        }
+
+        const timeRow = time ? `
+          <div class="popup-time">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>${time}</span>
+          </div>` : '';
+
+        return `
+          <div class="cargo-popup-body">
+            <div class="popup-badge ${badgeClass}">${iconSvg}<span>${title}</span></div>
+            ${desc ? `<div class="popup-desc">${desc}</div>` : ''}
+            ${timeRow}
+          </div>
+        `;
+      }
+
+      let firstMarker = null;
+      let latestMarker = null;
+      const allMarkers = [];
+
       // Add markers on each checkpoint
       validPoints.forEach((point, index) => {
         const isFirst = (index === 0);
         const isLatest = (index === validPoints.length - 1);
+        let marker = null;
 
         if (isLatest) {
           // Current position (Truck icon, pulsing)
@@ -3387,9 +3527,18 @@
             iconSize: [38, 38],
             iconAnchor: [19, 19]
           });
-          L.marker([point.lat, point.lng], { icon: truckIcon, zIndexOffset: 1000 })
-            .bindPopup(`<b>🚚 Текущее положение:</b><br><span style="color:#60a5fa">${point.status}</span><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+          const popupHtml = createPopupContent('truck', point.status || 'Текущее положение', point.context || 'В пути по маршруту', point.time);
+          marker = L.marker([point.lat, point.lng], { icon: truckIcon, zIndexOffset: 1000 })
+            .bindPopup(popupHtml, {
+              autoClose: false,
+              closeOnClick: false,
+              autoPan: false,
+              closeButton: false,
+              offset: [0, -18],
+              className: 'cargo-map-popup'
+            })
             .addTo(markerLayerGroup);
+          latestMarker = marker;
         } else if (isFirst) {
           // Origin / Warehouse
           const originIcon = L.divIcon({
@@ -3398,9 +3547,18 @@
             iconSize: [30, 30],
             iconAnchor: [15, 15]
           });
-          L.marker([point.lat, point.lng], { icon: originIcon, zIndexOffset: 500 })
-            .bindPopup(`<b>📦 Склад отправления:</b><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+          const popupHtml = createPopupContent('origin', 'Склад отправления', point.context || 'Прием груза', point.time);
+          marker = L.marker([point.lat, point.lng], { icon: originIcon, zIndexOffset: 500 })
+            .bindPopup(popupHtml, {
+              autoClose: false,
+              closeOnClick: false,
+              autoPan: false,
+              closeButton: false,
+              offset: [0, -14],
+              className: 'cargo-map-popup'
+            })
             .addTo(markerLayerGroup);
+          firstMarker = marker;
         } else {
           // Intermediate Checkpoints
           const checkIcon = L.divIcon({
@@ -3409,19 +3567,83 @@
             iconSize: [24, 24],
             iconAnchor: [12, 12]
           });
-          L.marker([point.lat, point.lng], { icon: checkIcon })
-            .bindPopup(`<b>Этап #${index + 1} (${point.status}):</b><br>${point.context}<br><small style="color:#94a3b8">${point.time}</small>`)
+          const popupHtml = createPopupContent('checkpoint', `Этап #${index + 1} (${point.status})`, point.context, point.time);
+          marker = L.marker([point.lat, point.lng], { icon: checkIcon, zIndexOffset: 200 })
+            .bindPopup(popupHtml, {
+              autoClose: false,
+              closeOnClick: false,
+              autoPan: false,
+              closeButton: false,
+              offset: [0, -12],
+              className: 'cargo-map-popup'
+            })
             .addTo(markerLayerGroup);
         }
+
+        if (marker) {
+          allMarkers.push({ marker, index, isFirst, isLatest });
+        }
+      });
+
+      const isSameLocation = (firstMarker && latestMarker && validPoints.length > 1 &&
+        validPoints[0].lat === validPoints[validPoints.length - 1].lat &&
+        validPoints[0].lng === validPoints[validPoints.length - 1].lng);
+
+      function resetToDefaultPopups() {
+        allMarkers.forEach(m => m.marker.closePopup());
+
+        if (firstMarker) {
+          firstMarker.openPopup();
+        }
+        if (latestMarker && latestMarker !== firstMarker && !isSameLocation) {
+          latestMarker.openPopup();
+        }
+      }
+
+      // Marker click handlers: tapping any marker closes others and displays tapped marker's info
+      allMarkers.forEach((itemObj) => {
+        itemObj.marker.on('click', (e) => {
+          if (e.originalEvent) {
+            e.originalEvent._markerHandled = true;
+          }
+          triggerHaptic('light');
+
+          // Close all other popups
+          allMarkers.forEach(m => {
+            if (m.marker !== itemObj.marker) {
+              m.marker.closePopup();
+            }
+          });
+
+          // Open the tapped marker popup
+          itemObj.marker.openPopup();
+        });
+      });
+
+      // Tapping empty map area restores default popups (origin + latest)
+      leafletMap.off('click');
+      leafletMap.on('click', (e) => {
+        if (e.originalEvent && e.originalEvent._markerHandled) {
+          return;
+        }
+        resetToDefaultPopups();
+        triggerHaptic('light');
       });
 
       leafletMap.invalidateSize();
       if (polylineCoords.length > 1) {
         const bounds = L.latLngBounds(polylineCoords);
-        leafletMap.fitBounds(bounds, { padding: [45, 45], maxZoom: 10 });
+        leafletMap.fitBounds(bounds, {
+          paddingTopLeft: [50, 140],
+          paddingBottomRight: [50, 70],
+          maxZoom: 9
+        });
       } else if (polylineCoords.length === 1) {
         leafletMap.setView(polylineCoords[0], 8);
       }
+
+      // Always ensure origin and latest point popups are open upon map render
+      resetToDefaultPopups();
     }
 
     if (openMapBtn) {
